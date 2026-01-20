@@ -5,37 +5,26 @@ from app.services.db import supabase
 
 router = APIRouter()
 
-# --- Data Models (Validation) ---
 class TaskCreate(BaseModel):
     title: str
 
 class TaskUpdate(BaseModel):
     title: Optional[str] = None
     is_completed: Optional[bool] = None
+    status: Optional[str] = None # <<< NEW
 
 class TaskResponse(BaseModel):
     id: str
     title: str
     is_completed: bool
+    status: str # <<< NEW
     created_at: str
-
-# --- API Endpoints ---
 
 @router.get("/", response_model=List[TaskResponse])
 def get_tasks(authorization: str = Header(None)):
-    """Fetch all tasks for the logged-in user."""
-    if not supabase:
-        raise HTTPException(status_code=500, detail="Database connection failed")
-    
-    if not authorization:
-        raise HTTPException(status_code=401, detail="Missing Authorization header")
-
     try:
-        # Pass the user's token to Supabase so RLS policies apply
-        # This ensures users only see THEIR tasks
         token = authorization.replace("Bearer ", "")
         supabase.postgrest.auth(token)
-        
         response = supabase.table("tasks").select("*").order("created_at", desc=True).execute()
         return response.data
     except Exception as e:
@@ -43,71 +32,42 @@ def get_tasks(authorization: str = Header(None)):
 
 @router.post("/", response_model=TaskResponse)
 def create_task(task: TaskCreate, authorization: str = Header(None)):
-    """Create a new task."""
-    if not supabase:
-        raise HTTPException(status_code=500, detail="Database connection failed")
-    
-    if not authorization:
-        raise HTTPException(status_code=401, detail="Missing Authorization header")
-
     try:
         token = authorization.replace("Bearer ", "")
         supabase.postgrest.auth(token)
-        
-        # We need the User ID to insert the row correctly
         user = supabase.auth.get_user(token)
         user_id = user.user.id
-
-        data = {"title": task.title, "user_id": user_id}
+        
+        data = {"title": task.title, "user_id": user_id, "status": "todo", "is_completed": False}
         response = supabase.table("tasks").insert(data).execute()
         return response.data[0]
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.patch("/{task_id}", response_model=TaskResponse)
-def update_task(task_id: str, task: TaskUpdate, authorization: str = Header(None)):
-    """Update a task (mark complete or rename)."""
-    if not supabase:
-        raise HTTPException(status_code=500, detail="Database connection failed")
-    
-    if not authorization:
-        raise HTTPException(status_code=401, detail="Missing Authorization header")
-
+@router.patch("/{task_id}")
+def update_task(task_id: str, updates: TaskUpdate, authorization: str = Header(None)):
     try:
-        supabase.postgrest.auth(authorization.replace("Bearer ", ""))
+        token = authorization.replace("Bearer ", "")
+        supabase.postgrest.auth(token)
         
-        update_data = {}
-        if task.title is not None:
-            update_data["title"] = task.title
-        if task.is_completed is not None:
-            update_data["is_completed"] = task.is_completed
-
-        response = supabase.table("tasks").update(update_data).eq("id", task_id).execute()
-        
-        if not response.data:
-            raise HTTPException(status_code=404, detail="Task not found")
+        data = {}
+        if updates.title is not None: data["title"] = updates.title
+        if updates.status is not None: 
+            data["status"] = updates.status
+            # Keep is_completed synced for backward compatibility
+            data["is_completed"] = True if updates.status == 'done' else False
             
-        return response.data[0]
+        supabase.table("tasks").update(data).eq("id", task_id).execute()
+        return {"msg": "Updated"}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
 @router.delete("/{task_id}")
 def delete_task(task_id: str, authorization: str = Header(None)):
-    """Delete a task."""
-    if not supabase:
-        raise HTTPException(status_code=500, detail="Database connection failed")
-        
-    if not authorization:
-        raise HTTPException(status_code=401, detail="Missing Authorization header")
-
     try:
-        supabase.postgrest.auth(authorization.replace("Bearer ", ""))
-        response = supabase.table("tasks").delete().eq("id", task_id).execute()
-        
-        # Check if any row was actually deleted
-        if not response.data:
-            raise HTTPException(status_code=404, detail="Task not found")
-            
-        return {"message": "Task deleted successfully"}
+        token = authorization.replace("Bearer ", "")
+        supabase.postgrest.auth(token)
+        supabase.table("tasks").delete().eq("id", task_id).execute()
+        return {"msg": "Deleted"}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))

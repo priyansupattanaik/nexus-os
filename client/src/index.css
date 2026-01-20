@@ -3,13 +3,34 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    /* Default (Cyan) */
+    --nexus-accent: #00f3ff;
+    --nexus-secondary: #7000ff;
+    --nexus-bg: #050505;
+  }
+
+  /* CHROMA SHIFT THEMES */
+  .theme-crimson {
+    --nexus-accent: #ff0055;
+    --nexus-secondary: #ffaa00;
+  }
+  .theme-amber {
+    --nexus-accent: #ffaa00;
+    --nexus-secondary: #00ffaa;
+  }
+  .theme-violet {
+    --nexus-accent: #d000ff;
+    --nexus-secondary: #00f3ff;
+  }
+
   body {
-    @apply bg-nexus-bg text-nexus-text antialiased overflow-x-hidden;
-    /* The Cyberpunk Grid Background */
+    background-color: var(--nexus-bg);
+    color: #e0f7fa;
     background-image:
       radial-gradient(circle at 50% 50%, #1a1a2e 0%, #000 80%),
-      linear-gradient(rgba(0, 243, 255, 0.02) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0, 243, 255, 0.02) 1px, transparent 1px);
+      linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
     background-size:
       100% 100%,
       40px 40px,
@@ -18,36 +39,21 @@
 }
 
 @layer components {
-  /* HOLOGRAPHIC PANEL (Replaces Glass) */
   .holo-panel {
-    @apply relative bg-nexus-panel border border-nexus-border rounded-xl backdrop-blur-sm overflow-hidden transition-all duration-300;
+    @apply relative bg-black/40 border border-[var(--nexus-accent)]/30 rounded-xl backdrop-blur-sm overflow-hidden transition-all duration-300;
     box-shadow:
-      0 0 15px rgba(0, 243, 255, 0.05),
-      inset 0 0 20px rgba(0, 243, 255, 0.02);
-  }
-
-  /* The "Scanline" overlay effect */
-  .holo-panel::after {
-    content: "";
-    @apply absolute inset-0 pointer-events-none opacity-[0.03];
-    background: linear-gradient(
-      to bottom,
-      transparent 50%,
-      rgba(0, 255, 255, 1) 50%
-    );
-    background-size: 100% 4px;
-    z-index: 1;
+      0 0 15px rgba(0, 0, 0, 0.5),
+      inset 0 0 20px rgba(255, 255, 255, 0.02);
   }
 
   .holo-input {
-    @apply bg-black/40 border border-nexus-border/30 rounded-lg px-4 py-3 text-nexus-text placeholder:text-nexus-subtext focus:outline-none focus:border-nexus-accent/80 focus:shadow-[0_0_10px_rgba(0,243,255,0.2)] transition-all font-mono;
+    @apply bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white placeholder:text-gray-500 focus:outline-none focus:border-[var(--nexus-accent)]/80 focus:shadow-[0_0_10px_rgba(255,255,255,0.1)] transition-all font-mono;
   }
 
   .holo-button {
-    @apply bg-nexus-accent/10 hover:bg-nexus-accent/20 text-nexus-accent border border-nexus-accent/30 font-bold py-2 px-4 rounded-lg transition-all active:scale-95 uppercase tracking-wider text-xs shadow-[0_0_10px_rgba(0,243,255,0.1)] hover:shadow-[0_0_20px_rgba(0,243,255,0.3)];
+    @apply bg-[var(--nexus-accent)]/10 hover:bg-[var(--nexus-accent)]/20 text-[var(--nexus-accent)] border border-[var(--nexus-accent)]/30 font-bold py-2 px-4 rounded-lg transition-all active:scale-95 uppercase tracking-wider text-xs shadow-[0_0_10px_rgba(0,0,0,0.2)];
   }
 
-  /* Custom Scrollbar (Neon Style) */
   ::-webkit-scrollbar {
     width: 4px;
   }
@@ -55,7 +61,7 @@
     background: #050505;
   }
   ::-webkit-scrollbar-thumb {
-    background: #00f3ff;
+    background: var(--nexus-accent);
     border-radius: 2px;
   }
 }

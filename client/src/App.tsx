@@ -5,20 +5,20 @@ import { useEffect, useState, Suspense, lazy } from "react";
 import { checkSystemStatus, getAIBriefing } from "@/lib/api";
 import VoiceCommand from "@/components/VoiceCommand";
 import FocusMode from "@/components/FocusMode";
+import OmniCommand from "@/components/OmniCommand"; // <<< NEW
 import { Button } from "@/components/ui/button";
 import { useSystemStore } from "@/lib/store";
 
-// Lazy Load Modules
 const CoreScene = lazy(() => import("@/components/3d/CoreScene"));
 const TasksModule = lazy(() => import("@/components/TasksModule"));
 const HabitsModule = lazy(() => import("@/components/HabitsModule"));
 const FinanceModule = lazy(() => import("@/components/FinanceModule"));
 const JournalModule = lazy(() => import("@/components/JournalModule"));
-const MusicModule = lazy(() => import("@/components/MusicModule")); // <<< NEW IMPORT
+const MusicModule = lazy(() => import("@/components/MusicModule"));
 
 function Dashboard() {
   const { session } = useAuth();
-  const { isFocusMode, setFocusMode } = useSystemStore();
+  const { isFocusMode, setFocusMode, theme } = useSystemStore(); // <<< Get Theme
   const [status, setStatus] = useState("INITIALIZING...");
   const [briefing, setBriefing] = useState("");
   const [showProfile, setShowProfile] = useState(false);
@@ -40,7 +40,11 @@ function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen relative flex flex-col font-sans selection:bg-nexus-accent/30 selection:text-black">
+    // <<< Apply Dynamic Theme Class >>>
+    <div
+      className={`min-h-screen relative flex flex-col font-sans selection:bg-[var(--nexus-accent)]/30 selection:text-black theme-${theme}`}
+    >
+      <OmniCommand /> {/* <<< Global Shortcut */}
       <VoiceCommand />
       {showProfile && (
         <ProfileModule
@@ -49,27 +53,26 @@ function Dashboard() {
         />
       )}
       {isFocusMode && <FocusMode />}
-
-      {/* Header */}
-      <header className="sticky top-0 z-50 px-6 py-3 flex justify-between items-center bg-black/80 backdrop-blur-md border-b border-nexus-border/20 shadow-[0_5px_20px_rgba(0,0,0,0.5)]">
+      <header className="sticky top-0 z-50 px-6 py-3 flex justify-between items-center bg-black/80 backdrop-blur-md border-b border-[var(--nexus-accent)]/20 shadow-[0_5px_20px_rgba(0,0,0,0.5)]">
         <div className="flex items-center gap-3">
-          <div className="w-2 h-2 rounded-full bg-nexus-accent animate-pulse shadow-[0_0_10px_#00f3ff]" />
-          <span className="text-xl font-bold tracking-[0.2em] text-nexus-text uppercase font-mono">
-            NEXUS<span className="text-nexus-accent text-sm">OS</span>
+          <div className="w-2 h-2 rounded-full bg-[var(--nexus-accent)] animate-pulse shadow-[0_0_10px_currentColor]" />
+          <span className="text-xl font-bold tracking-[0.2em] text-white uppercase font-mono">
+            NEXUS<span className="text-[var(--nexus-accent)] text-sm">OS</span>
           </span>
         </div>
+
         <div className="flex items-center gap-4">
           <Button
             onClick={() => setFocusMode(true)}
-            className="hidden md:flex h-8 text-[10px] tracking-widest bg-nexus-secondary/10 border border-nexus-secondary/50 text-nexus-secondary hover:bg-nexus-secondary/20 uppercase"
+            className="hidden md:flex h-8 text-[10px] tracking-widest bg-[var(--nexus-secondary)]/10 border border-[var(--nexus-secondary)]/50 text-[var(--nexus-secondary)] hover:bg-[var(--nexus-secondary)]/20 uppercase"
           >
             Focus Mode
           </Button>
           <div
-            className={`hidden md:flex items-center gap-2 px-3 py-1 rounded border bg-black/40 ${status === "ONLINE" ? "border-nexus-success/30 text-nexus-success" : "border-nexus-danger/30 text-nexus-danger"}`}
+            className={`hidden md:flex items-center gap-2 px-3 py-1 rounded border bg-black/40 ${status === "ONLINE" ? "border-green-500/30 text-green-500" : "border-red-500/30 text-red-500"}`}
           >
             <div
-              className={`w-1.5 h-1.5 rounded-full ${status === "ONLINE" ? "bg-nexus-success" : "bg-nexus-danger"} animate-pulse`}
+              className={`w-1.5 h-1.5 rounded-full ${status === "ONLINE" ? "bg-green-500" : "bg-red-500"} animate-pulse`}
             />
             <span className="text-[10px] font-bold tracking-widest font-mono">
               SYS::{status}
@@ -79,14 +82,12 @@ function Dashboard() {
             onClick={() => setShowProfile(true)}
             className="relative group"
           >
-            <div className="w-9 h-9 rounded border border-nexus-accent/30 bg-nexus-accent/5 flex items-center justify-center text-nexus-accent font-bold text-xs group-hover:bg-nexus-accent/20 group-hover:border-nexus-accent transition-all shadow-[0_0_10px_rgba(0,243,255,0.1)]">
+            <div className="w-9 h-9 rounded border border-[var(--nexus-accent)]/30 bg-[var(--nexus-accent)]/5 flex items-center justify-center text-[var(--nexus-accent)] font-bold text-xs group-hover:bg-[var(--nexus-accent)]/20 group-hover:border-[var(--nexus-accent)] transition-all">
               {session.user.email?.[0].toUpperCase()}
             </div>
           </button>
         </div>
       </header>
-
-      {/* Main Grid */}
       <main className="flex-1 p-4 md:p-6 lg:p-8 max-w-[1800px] mx-auto w-full z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 lg:grid-rows-[450px_auto] gap-6">
           <Suspense
@@ -94,28 +95,28 @@ function Dashboard() {
               <div className="holo-panel min-h-[400px] animate-pulse bg-white/5" />
             }
           >
-            <div className="holo-panel col-span-1 md:col-span-2 relative group min-h-[400px] border-nexus-accent/30">
+            <div className="holo-panel col-span-1 md:col-span-2 relative group min-h-[400px] border-[var(--nexus-accent)]/30">
               <div className="absolute top-6 left-6 z-20">
-                <h2 className="text-nexus-accent font-bold tracking-[0.2em] text-xs mb-2 uppercase opacity-70">
+                <h2 className="text-[var(--nexus-accent)] font-bold tracking-[0.2em] text-xs mb-2 uppercase opacity-70">
                   Central Processing Unit
                 </h2>
                 <Button
                   onClick={handleBriefing}
                   disabled={isProcessing}
-                  className="holo-button text-[10px] px-4 py-2 h-auto border-nexus-accent/50 flex items-center gap-2"
+                  className="holo-button text-[10px] px-4 py-2 h-auto border-[var(--nexus-accent)]/50 flex items-center gap-2"
                 >
                   <span
-                    className={`w-1.5 h-1.5 bg-nexus-accent rounded-full ${isProcessing ? "animate-ping" : ""}`}
+                    className={`w-1.5 h-1.5 bg-[var(--nexus-accent)] rounded-full ${isProcessing ? "animate-ping" : ""}`}
                   />
-                  {isProcessing
-                    ? "ANALYZING DATASTREAM..."
-                    : "INITIATE BRIEFING"}
+                  {isProcessing ? "ANALYZING..." : "INITIATE BRIEFING"}
                 </Button>
               </div>
               {briefing && (
-                <div className="absolute bottom-6 left-6 right-6 p-4 bg-black/80 border-l-2 border-nexus-accent backdrop-blur-md max-w-xl animate-in fade-in slide-in-from-bottom-2 z-20">
-                  <p className="text-nexus-text font-mono text-sm leading-relaxed">
-                    <span className="text-nexus-accent mr-2">{">>"}</span>
+                <div className="absolute bottom-6 left-6 right-6 p-4 bg-black/80 border-l-2 border-[var(--nexus-accent)] backdrop-blur-md max-w-xl animate-in fade-in slide-in-from-bottom-2 z-20">
+                  <p className="text-white font-mono text-sm leading-relaxed">
+                    <span className="text-[var(--nexus-accent)] mr-2">
+                      {">>"}
+                    </span>
                     {briefing}
                   </p>
                 </div>
@@ -123,18 +124,16 @@ function Dashboard() {
               <div className="absolute inset-0 z-0 opacity-80 transition-opacity duration-1000 group-hover:opacity-100">
                 <CoreScene />
               </div>
-              <div className="absolute inset-0 bg-[linear-gradient(rgba(0,243,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,243,255,0.03)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
+              <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
             </div>
           </Suspense>
 
-          {/* Right Column Stack */}
           <div className="col-span-1 flex flex-col gap-6">
             <Suspense
               fallback={<div className="holo-panel min-h-[200px] bg-white/5" />}
             >
               <FinanceModule />
             </Suspense>
-            {/* Music Player added here */}
             <Suspense
               fallback={<div className="holo-panel min-h-[200px] bg-white/5" />}
             >
@@ -166,33 +165,5 @@ function Dashboard() {
         </div>
       </main>
     </div>
-  );
-}
-
-function LoadingScreen() {
-  return (
-    <div className="min-h-screen bg-black flex flex-col items-center justify-center relative overflow-hidden">
-      <div className="absolute inset-0 bg-holo-grid opacity-20" />
-      <div className="relative z-10 flex flex-col items-center gap-6">
-        <div className="w-16 h-16 border-t-2 border-nexus-accent rounded-full animate-spin shadow-[0_0_20px_rgba(0,243,255,0.2)]" />
-        <div className="text-nexus-text font-mono text-xs tracking-[0.3em] animate-pulse">
-          SYSTEM INITIALIZING...
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function AppContent() {
-  const { session, loading } = useAuth();
-  if (loading) return <LoadingScreen />;
-  return session ? <Dashboard /> : <Login />;
-}
-
-export default function App() {
-  return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
   );
 }
