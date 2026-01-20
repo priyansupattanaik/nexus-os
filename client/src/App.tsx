@@ -7,13 +7,13 @@ import CoreScene from "@/components/3d/CoreScene";
 import TasksModule from "@/components/TasksModule";
 import HabitsModule from "@/components/HabitsModule";
 import FinanceModule from "@/components/FinanceModule";
-import JournalModule from "@/components/JournalModule"; // <<< NEW IMPORT
+import JournalModule from "@/components/JournalModule";
 import VoiceCommand from "@/components/VoiceCommand";
 import { Button } from "@/components/ui/button";
 
 function Dashboard() {
   const { session } = useAuth();
-  const [status, setStatus] = useState("Initializing...");
+  const [status, setStatus] = useState("INITIALIZING...");
   const [briefing, setBriefing] = useState("");
   const [showProfile, setShowProfile] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -26,20 +26,16 @@ function Dashboard() {
 
   const handleBriefing = async () => {
     setIsProcessing(true);
-    setBriefing("Establishing Neural Link...");
-    await new Promise((r) => setTimeout(r, 1000));
+    setBriefing("ESTABLISHING NEURAL LINK...");
+    await new Promise((r) => setTimeout(r, 800)); // Tactical delay
     const data = await getAIBriefing();
     setBriefing(data.message);
     setIsProcessing(false);
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden flex flex-col font-sans selection:bg-nexus-accent/30">
-      {/* Background Ambient Glows */}
-      <div className="fixed top-[-20%] right-[-10%] w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none" />
-      <div className="fixed bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-purple-600/10 rounded-full blur-[100px] pointer-events-none" />
-
-      {/* Floating Elements */}
+    <div className="min-h-screen relative flex flex-col font-sans selection:bg-nexus-accent/30 selection:text-black">
+      {/* Voice Assistant Overlay */}
       <VoiceCommand />
       {showProfile && (
         <ProfileModule
@@ -48,96 +44,102 @@ function Dashboard() {
         />
       )}
 
-      {/* --- Apple-Style Glass Header --- */}
-      <header className="sticky top-0 z-50 px-6 py-4 flex justify-between items-center bg-black/5 backdrop-blur-lg border-b border-white/5">
+      {/* --- Holographic Header --- */}
+      <header className="sticky top-0 z-50 px-6 py-3 flex justify-between items-center bg-black/80 backdrop-blur-md border-b border-nexus-border/20 shadow-[0_5px_20px_rgba(0,0,0,0.5)]">
         <div className="flex items-center gap-3">
-          <div className="w-3 h-3 rounded-full bg-nexus-accent shadow-[0_0_10px_#0A84FF]" />
-          <span className="text-lg font-semibold tracking-wide text-white/90">
-            NEXUS OS
+          <div className="w-2 h-2 rounded-full bg-nexus-accent animate-pulse shadow-[0_0_10px_#00f3ff]" />
+          <span className="text-xl font-bold tracking-[0.2em] text-nexus-text uppercase font-mono">
+            NEXUS<span className="text-nexus-accent text-sm">OS</span>
           </span>
         </div>
 
         <div className="flex items-center gap-4">
+          {/* System Status Badge */}
           <div
-            className={`hidden md:flex px-3 py-1 rounded-full text-[10px] font-bold tracking-wider border ${status === "ONLINE" ? "bg-green-500/10 border-green-500/20 text-green-400" : "bg-red-500/10 border-red-500/20 text-red-400"}`}
+            className={`hidden md:flex items-center gap-2 px-3 py-1 rounded border bg-black/40 ${status === "ONLINE" ? "border-nexus-success/30 text-nexus-success" : "border-nexus-danger/30 text-nexus-danger"}`}
           >
-            SYSTEM: {status}
+            <div
+              className={`w-1.5 h-1.5 rounded-full ${status === "ONLINE" ? "bg-nexus-success" : "bg-nexus-danger"} animate-pulse`}
+            />
+            <span className="text-[10px] font-bold tracking-widest font-mono">
+              SYS::{status}
+            </span>
           </div>
+
+          {/* Profile Button */}
           <button
             onClick={() => setShowProfile(true)}
-            className="w-9 h-9 rounded-full bg-gradient-to-tr from-nexus-accent to-purple-600 p-[1px] hover:scale-105 transition-transform"
+            className="relative group"
           >
-            <div className="w-full h-full rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-xs font-bold text-white">
+            <div className="w-9 h-9 rounded border border-nexus-accent/30 bg-nexus-accent/5 flex items-center justify-center text-nexus-accent font-bold text-xs group-hover:bg-nexus-accent/20 group-hover:border-nexus-accent transition-all shadow-[0_0_10px_rgba(0,243,255,0.1)]">
               {session.user.email?.[0].toUpperCase()}
             </div>
+            {/* Tech Corners */}
+            <div className="absolute -top-px -left-px w-2 h-2 border-t border-l border-nexus-accent opacity-50 group-hover:opacity-100 transition-opacity" />
+            <div className="absolute -bottom-px -right-px w-2 h-2 border-b border-r border-nexus-accent opacity-50 group-hover:opacity-100 transition-opacity" />
           </button>
         </div>
       </header>
 
-      {/* --- Main Bento Grid Layout --- */}
-      <main className="flex-1 p-4 md:p-6 lg:p-8 max-w-[1600px] mx-auto w-full z-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 lg:grid-rows-[400px_auto] gap-6 h-full">
-          {/* HERO: Glass Tesseract */}
-          <div className="glass-panel col-span-1 md:col-span-2 relative overflow-hidden group min-h-[350px]">
-            <div className="absolute top-6 left-6 z-20 flex flex-col gap-2">
-              <h2 className="text-2xl font-bold text-white mb-1">
-                Neural Core
+      {/* --- Main Command Grid --- */}
+      <main className="flex-1 p-4 md:p-6 lg:p-8 max-w-[1800px] mx-auto w-full z-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 lg:grid-rows-[450px_auto] gap-6">
+          {/* CORE SCENE - The Central Intelligence */}
+          <div className="holo-panel col-span-1 md:col-span-2 relative group min-h-[400px] border-nexus-accent/30">
+            {/* Controls */}
+            <div className="absolute top-6 left-6 z-20">
+              <h2 className="text-nexus-accent font-bold tracking-[0.2em] text-xs mb-2 uppercase opacity-70">
+                Central Processing Unit
               </h2>
               <Button
                 onClick={handleBriefing}
                 disabled={isProcessing}
-                className="glass-button w-fit text-xs border border-white/20"
+                className="holo-button text-[10px] px-4 py-2 h-auto border-nexus-accent/50 flex items-center gap-2"
               >
-                {isProcessing ? "Processing..." : "Initialize Briefing"}
+                <span
+                  className={`w-1.5 h-1.5 bg-nexus-accent rounded-full ${isProcessing ? "animate-ping" : ""}`}
+                />
+                {isProcessing ? "ANALYZING DATASTREAM..." : "INITIATE BRIEFING"}
               </Button>
             </div>
+
+            {/* AI Output Stream */}
             {briefing && (
-              <div className="absolute bottom-6 left-6 right-6 p-4 rounded-xl bg-black/60 backdrop-blur-xl border border-white/10 text-sm md:text-base leading-relaxed text-gray-200 animate-in fade-in slide-in-from-bottom-4 z-20 max-w-2xl">
-                <span className="text-nexus-accent font-bold text-xs uppercase tracking-wider block mb-2">
-                  Intelligence Report
-                </span>
-                {briefing}
+              <div className="absolute bottom-6 left-6 right-6 p-4 bg-black/80 border-l-2 border-nexus-accent backdrop-blur-md max-w-xl animate-in fade-in slide-in-from-bottom-2 z-20">
+                <p className="text-nexus-text font-mono text-sm leading-relaxed">
+                  <span className="text-nexus-accent mr-2">{">>"}</span>
+                  {briefing}
+                </p>
               </div>
             )}
+
+            {/* 3D Viewport */}
             <div className="absolute inset-0 z-0 opacity-80 transition-opacity duration-1000 group-hover:opacity-100">
               <CoreScene />
             </div>
+
+            {/* Background Grid Lines */}
+            <div className="absolute inset-0 bg-[linear-gradient(rgba(0,243,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,243,255,0.03)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
           </div>
 
-          {/* FINANCE MODULE */}
-          <div className="glass-panel col-span-1 min-h-[300px] md:min-h-auto flex flex-col">
-            <div className="flex-1 overflow-hidden p-1">
-              <div className="h-full [&>div]:h-full [&>div]:bg-transparent [&>div]:border-none [&>div]:shadow-none">
-                <FinanceModule />
-              </div>
-            </div>
+          {/* FINANCE MODULE - Compact Data */}
+          <div className="col-span-1 min-h-[300px]">
+            <FinanceModule />
           </div>
 
-          {/* TASKS MODULE */}
-          <div className="glass-panel col-span-1 min-h-[400px] flex flex-col">
-            <div className="flex-1 overflow-hidden p-1">
-              <div className="h-full [&>div]:h-full [&>div]:bg-transparent [&>div]:border-none [&>div]:shadow-none">
-                <TasksModule />
-              </div>
-            </div>
+          {/* TASKS MODULE - High Priority */}
+          <div className="col-span-1 min-h-[400px]">
+            <TasksModule />
           </div>
 
-          {/* HABITS MODULE */}
-          <div className="glass-panel col-span-1 min-h-[400px] flex flex-col">
-            <div className="flex-1 overflow-hidden p-1">
-              <div className="h-full [&>div]:h-full [&>div]:bg-transparent [&>div]:border-none [&>div]:shadow-none">
-                <HabitsModule />
-              </div>
-            </div>
+          {/* HABITS MODULE - Routine Tracking */}
+          <div className="col-span-1 min-h-[400px]">
+            <HabitsModule />
           </div>
 
-          {/* JOURNAL MODULE (Previously Locked) */}
-          <div className="glass-panel col-span-1 min-h-[300px] flex flex-col">
-            <div className="flex-1 overflow-hidden p-1">
-              <div className="h-full [&>div]:h-full [&>div]:bg-transparent [&>div]:border-none [&>div]:shadow-none">
-                <JournalModule />
-              </div>
-            </div>
+          {/* JOURNAL MODULE - Logs */}
+          <div className="col-span-1 min-h-[300px]">
+            <JournalModule />
           </div>
         </div>
       </main>
@@ -145,13 +147,17 @@ function Dashboard() {
   );
 }
 
+// Cyberpunk Loading Screen
 function LoadingScreen() {
   return (
-    <div className="min-h-screen bg-black flex flex-col items-center justify-center">
-      <div className="w-12 h-12 border-4 border-nexus-accent/30 border-t-nexus-accent rounded-full animate-spin" />
-      <p className="text-nexus-subtext text-xs tracking-[0.2em] mt-6 animate-pulse">
-        LOADING OS
-      </p>
+    <div className="min-h-screen bg-black flex flex-col items-center justify-center relative overflow-hidden">
+      <div className="absolute inset-0 bg-holo-grid opacity-20" />
+      <div className="relative z-10 flex flex-col items-center gap-6">
+        <div className="w-16 h-16 border-t-2 border-nexus-accent rounded-full animate-spin shadow-[0_0_20px_rgba(0,243,255,0.2)]" />
+        <div className="text-nexus-text font-mono text-xs tracking-[0.3em] animate-pulse">
+          SYSTEM INITIALIZING...
+        </div>
+      </div>
     </div>
   );
 }

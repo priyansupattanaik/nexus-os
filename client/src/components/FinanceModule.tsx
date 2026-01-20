@@ -7,7 +7,6 @@ import {
 } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card } from "@/components/ui/card";
 
 export default function FinanceModule() {
   const { session } = useAuth();
@@ -18,13 +17,10 @@ export default function FinanceModule() {
   useEffect(() => {
     if (session) loadData();
   }, [session]);
-
   const loadData = async () => {
     try {
       setTxns(await fetchTransactions(session.access_token));
-    } catch (e) {
-      console.error(e);
-    }
+    } catch (e) {}
   };
 
   const handleAdd = async (type: "income" | "expense") => {
@@ -44,70 +40,78 @@ export default function FinanceModule() {
   );
 
   return (
-    <Card className="bg-black/40 backdrop-blur-md border border-white/10 rounded-xl p-6 h-full flex flex-col shadow-2xl">
-      <div className="flex justify-between items-end mb-4">
-        <h2 className="text-xl font-semibold text-gray-300">Finance</h2>
+    <div className="flex flex-col h-full bg-nexus-panel/50 rounded-xl overflow-hidden">
+      <div className="p-4 border-b border-nexus-border/30 bg-black/20 flex justify-between items-end">
+        <h2 className="text-nexus-accent font-bold tracking-widest text-sm uppercase">
+          Ledger
+        </h2>
         <div
-          className={`text-2xl font-mono ${balance >= 0 ? "text-green-400" : "text-red-400"}`}
+          className={`text-xl font-mono font-bold ${balance >= 0 ? "text-nexus-success" : "text-nexus-danger"}`}
         >
           ${balance.toFixed(2)}
         </div>
       </div>
-      <div className="flex gap-2 mb-4">
-        <Input
-          value={desc}
-          onChange={(e) => setDesc(e.target.value)}
-          placeholder="Item..."
-          className="bg-gray-900/50 border-gray-700 text-white flex-[2]"
-        />
-        <Input
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          placeholder="0.00"
-          type="number"
-          className="bg-gray-900/50 border-gray-700 text-white flex-1"
-        />
+      <div className="p-3 space-y-2">
+        <div className="flex gap-2">
+          <Input
+            value={desc}
+            onChange={(e) => setDesc(e.target.value)}
+            placeholder="Entry..."
+            className="holo-input h-8 text-xs flex-[2]"
+          />
+          <Input
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            placeholder="0.00"
+            type="number"
+            className="holo-input h-8 text-xs flex-1"
+          />
+        </div>
+        <div className="flex gap-2">
+          <Button
+            onClick={() => handleAdd("income")}
+            className="flex-1 h-7 text-[10px] bg-nexus-success/10 text-nexus-success border border-nexus-success/30 hover:bg-nexus-success/20 uppercase"
+          >
+            Credit
+          </Button>
+          <Button
+            onClick={() => handleAdd("expense")}
+            className="flex-1 h-7 text-[10px] bg-nexus-danger/10 text-nexus-danger border border-nexus-danger/30 hover:bg-nexus-danger/20 uppercase"
+          >
+            Debit
+          </Button>
+        </div>
       </div>
-      <div className="flex gap-2 mb-4">
-        <Button
-          onClick={() => handleAdd("income")}
-          className="flex-1 bg-green-900/30 text-green-400 border border-green-700 hover:bg-green-900/50"
-        >
-          In
-        </Button>
-        <Button
-          onClick={() => handleAdd("expense")}
-          className="flex-1 bg-red-900/30 text-red-400 border border-red-700 hover:bg-red-900/50"
-        >
-          Out
-        </Button>
-      </div>
-      <div className="flex-1 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto p-3 space-y-1 custom-scrollbar">
         {txns.map((t) => (
           <div
             key={t.id}
-            className="flex justify-between text-sm border-b border-gray-800 pb-1"
+            className="flex justify-between text-xs border-b border-white/5 pb-2 pt-1 font-mono hover:bg-white/5 px-2 rounded"
           >
-            <span className="text-gray-400">{t.description}</span>
-            <span
-              className={
-                t.type === "income" ? "text-green-500" : "text-red-500"
-              }
-            >
-              {t.type === "income" ? "+" : "-"}${t.amount}
-            </span>
-            <button
-              onClick={async () => {
-                await deleteTransaction(t.id, session.access_token);
-                loadData();
-              }}
-              className="text-gray-600 hover:text-red-500"
-            >
-              ×
-            </button>
+            <span className="text-nexus-subtext">{t.description}</span>
+            <div className="flex gap-3">
+              <span
+                className={
+                  t.type === "income"
+                    ? "text-nexus-success"
+                    : "text-nexus-danger"
+                }
+              >
+                {t.type === "income" ? "+" : "-"}${t.amount}
+              </span>
+              <button
+                onClick={async () => {
+                  await deleteTransaction(t.id, session.access_token);
+                  loadData();
+                }}
+                className="text-nexus-subtext hover:text-white"
+              >
+                ×
+              </button>
+            </div>
           </div>
         ))}
       </div>
-    </Card>
+    </div>
   );
 }

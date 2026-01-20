@@ -5,31 +5,32 @@ export default {
   theme: {
     extend: {
       colors: {
-        // New "Nexus Glass" Palette
         nexus: {
-          glass: "rgba(255, 255, 255, 0.1)", // Base glass layer
-          glassHover: "rgba(255, 255, 255, 0.15)", // Slightly brighter interaction
-          border: "rgba(255, 255, 255, 0.2)", // Subtle rim light
-          text: "#F5F5F7", // Apple Off-White
-          subtext: "#86868B", // Apple Grey
-          accent: "#0A84FF", // iOS Blue
-          dark: "#000000", // Deep Space Black
+          // The new "Holographic" Palette
+          bg: "#050505", // True Void Black
+          panel: "rgba(10, 10, 15, 0.8)", // Dark semi-transparent (Fast render)
+          border: "rgba(0, 255, 255, 0.2)", // Cyan Hologram Edge
+          accent: "#00f3ff", // Electric Cyan
+          secondary: "#7000ff", // Neon Purple
+          text: "#e0f7fa", // Pale Cyan Text (High Contrast)
+          subtext: "#5c7c8a", // Dimmed Interface Text
+          success: "#00ff9d", // Matrix Green
+          danger: "#ff0055", // Cyber Red
         },
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
-        // ... keep standard shadcn variables if needed, but we rely on 'nexus'
       },
-      backdropBlur: {
-        xs: "2px",
+      backgroundImage: {
+        "holo-grid":
+          "radial-gradient(circle at center, transparent 0%, #000 100%), linear-gradient(rgba(0, 243, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 243, 255, 0.03) 1px, transparent 1px)",
       },
       animation: {
-        "pulse-slow": "pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite",
-        float: "float 6s ease-in-out infinite",
+        "spin-slow": "spin 10s linear infinite",
+        "pulse-fast": "pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+        scanline: "scanline 8s linear infinite",
       },
       keyframes: {
-        float: {
-          "0%, 100%": { transform: "translateY(0)" },
-          "50%": { transform: "translateY(-20px)" },
+        scanline: {
+          "0%": { transform: "translateY(-100%)" },
+          "100%": { transform: "translateY(100%)" },
         },
       },
     },

@@ -3,48 +3,59 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
-    --background: 0 0% 0%;
-    --foreground: 0 0% 100%;
-  }
   body {
-    @apply bg-black text-nexus-text antialiased selection:bg-nexus-accent/30;
-    /* Create a subtle ambient gradient background */
-    background: radial-gradient(circle at 50% -20%, #1a1a2e 0%, #000000 60%);
-    min-height: 100vh;
+    @apply bg-nexus-bg text-nexus-text antialiased overflow-x-hidden;
+    /* The Cyberpunk Grid Background */
+    background-image:
+      radial-gradient(circle at 50% 50%, #1a1a2e 0%, #000 80%),
+      linear-gradient(rgba(0, 243, 255, 0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 243, 255, 0.02) 1px, transparent 1px);
+    background-size:
+      100% 100%,
+      40px 40px,
+      40px 40px;
   }
 }
 
 @layer components {
-  /* The "Apple Vision" Glass Card Class */
-  .glass-panel {
-    @apply bg-nexus-glass backdrop-blur-xl border border-nexus-border rounded-3xl shadow-2xl;
-    /* Subtle inner glow */
+  /* HOLOGRAPHIC PANEL (Replaces Glass) */
+  .holo-panel {
+    @apply relative bg-nexus-panel border border-nexus-border rounded-xl backdrop-blur-sm overflow-hidden transition-all duration-300;
     box-shadow:
-      0 4px 30px rgba(0, 0, 0, 0.5),
-      inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+      0 0 15px rgba(0, 243, 255, 0.05),
+      inset 0 0 20px rgba(0, 243, 255, 0.02);
   }
 
-  .glass-input {
-    @apply bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-nexus-accent/50 transition-all;
+  /* The "Scanline" overlay effect */
+  .holo-panel::after {
+    content: "";
+    @apply absolute inset-0 pointer-events-none opacity-[0.03];
+    background: linear-gradient(
+      to bottom,
+      transparent 50%,
+      rgba(0, 255, 255, 1) 50%
+    );
+    background-size: 100% 4px;
+    z-index: 1;
   }
 
-  .glass-button {
-    @apply bg-white/10 hover:bg-white/20 text-white font-medium py-2 px-4 rounded-xl transition-all active:scale-95 border border-white/10 backdrop-blur-md;
+  .holo-input {
+    @apply bg-black/40 border border-nexus-border/30 rounded-lg px-4 py-3 text-nexus-text placeholder:text-nexus-subtext focus:outline-none focus:border-nexus-accent/80 focus:shadow-[0_0_10px_rgba(0,243,255,0.2)] transition-all font-mono;
   }
-}
 
-/* Custom Scrollbar to match the minimalist theme */
-::-webkit-scrollbar {
-  width: 6px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
+  .holo-button {
+    @apply bg-nexus-accent/10 hover:bg-nexus-accent/20 text-nexus-accent border border-nexus-accent/30 font-bold py-2 px-4 rounded-lg transition-all active:scale-95 uppercase tracking-wider text-xs shadow-[0_0_10px_rgba(0,243,255,0.1)] hover:shadow-[0_0_20px_rgba(0,243,255,0.3)];
+  }
+
+  /* Custom Scrollbar (Neon Style) */
+  ::-webkit-scrollbar {
+    width: 4px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #050505;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #00f3ff;
+    border-radius: 2px;
+  }
 }

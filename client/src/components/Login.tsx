@@ -9,25 +9,16 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
-    setMessage("");
-
     try {
       if (isSignUp) {
-        // Sign Up Flow
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-        });
+        const { error } = await supabase.auth.signUp({ email, password });
         if (error) throw error;
-        setMessage("Account created! Please check your email to verify.");
+        setMessage("IDENTITY RECORDED. VERIFY EMAIL OR PROCEED.");
       } else {
-        // Sign In Flow
         const { error } = await supabase.auth.signInWithPassword({
           email,
           password,
@@ -35,7 +26,7 @@ export default function Login() {
         if (error) throw error;
       }
     } catch (err: any) {
-      setError(err.message);
+      setMessage(`ERROR: ${err.message}`);
     } finally {
       setLoading(false);
     }
@@ -43,61 +34,63 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Background Ambience */}
-      <div className="absolute top-[-20%] left-[-20%] w-[50vw] h-[50vw] bg-nexus-accent/20 rounded-full blur-[100px] pointer-events-none" />
+      {/* Cyberpunk Grid Background */}
+      <div className="absolute inset-0 bg-holo-grid opacity-20 pointer-events-none" />
 
-      {/* Glass Panel */}
-      <div className="glass-panel w-full max-w-md p-8 space-y-8 relative z-10 animate-in fade-in zoom-in-95 duration-500">
+      <div className="holo-panel w-full max-w-md p-8 space-y-8 relative z-10 border-t-4 border-t-nexus-accent">
         <div className="text-center space-y-2">
-          <h1 className="text-3xl font-semibold tracking-tight text-white">
-            {isSignUp ? "Create Account" : "Welcome Back"}
+          <h1 className="text-4xl font-bold tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-nexus-accent to-blue-500 animate-pulse">
+            NEXUS OS
           </h1>
-          <p className="text-nexus-subtext text-sm">
-            {isSignUp
-              ? "Enter your details to join NEXUS"
-              : "Sign in to access your OS"}
+          <p className="text-nexus-subtext text-xs font-mono tracking-[0.3em]">
+            SECURE TERMINAL ACCESS
           </p>
         </div>
 
-        <form onSubmit={handleAuth} className="space-y-4">
-          <div className="space-y-2">
+        <form onSubmit={handleAuth} className="space-y-5">
+          <div className="space-y-1">
+            <label className="text-[10px] font-bold text-nexus-accent uppercase ml-1">
+              Identity
+            </label>
             <Input
               type="email"
-              placeholder="Email Address"
+              placeholder="USER@NEXUS.NET"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="glass-input"
+              className="holo-input"
               required
             />
           </div>
-          <div className="space-y-2">
+          <div className="space-y-1">
+            <label className="text-[10px] font-bold text-nexus-accent uppercase ml-1">
+              Passkey
+            </label>
             <Input
               type="password"
-              placeholder="Password"
+              placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="glass-input"
+              className="holo-input"
               required
             />
           </div>
 
-          {error && (
-            <div className="text-red-400 text-xs text-center bg-red-900/20 p-2 rounded border border-red-500/20">
-              {error}
-            </div>
-          )}
           {message && (
-            <div className="text-green-400 text-xs text-center bg-green-900/20 p-2 rounded border border-green-500/20">
+            <div className="text-nexus-danger text-xs text-center font-mono border border-nexus-danger/30 bg-nexus-danger/10 p-2 rounded">
               {message}
             </div>
           )}
 
           <Button
             type="submit"
-            className="w-full glass-button hover:bg-white/20 h-11"
+            className="w-full holo-button h-12 text-sm"
             disabled={loading}
           >
-            {loading ? "Processing..." : isSignUp ? "Sign Up" : "Sign In"}
+            {loading
+              ? "AUTHENTICATING..."
+              : isSignUp
+                ? "INITIALIZE NEW USER"
+                : "ACCESS SYSTEM"}
           </Button>
         </form>
 
@@ -105,14 +98,11 @@ export default function Login() {
           <button
             onClick={() => {
               setIsSignUp(!isSignUp);
-              setError("");
               setMessage("");
             }}
-            className="text-xs text-nexus-subtext hover:text-white transition-colors"
+            className="text-xs text-nexus-subtext hover:text-nexus-accent transition-colors font-mono"
           >
-            {isSignUp
-              ? "Already have an account? Sign In"
-              : "Don't have an account? Create one"}
+            {isSignUp ? "[ BACK TO LOGIN ]" : "[ CREATE NEW IDENTITY ]"}
           </button>
         </div>
       </div>

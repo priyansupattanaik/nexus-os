@@ -8,7 +8,6 @@ import {
 } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card } from "@/components/ui/card";
 
 export default function HabitsModule() {
   const { session } = useAuth();
@@ -18,13 +17,10 @@ export default function HabitsModule() {
   useEffect(() => {
     if (session) loadHabits();
   }, [session]);
-
   const loadHabits = async () => {
     try {
       setHabits(await fetchHabits(session.access_token));
-    } catch (e) {
-      console.error(e);
-    }
+    } catch (e) {}
   };
 
   const handleAdd = async (e: any) => {
@@ -41,47 +37,50 @@ export default function HabitsModule() {
   };
 
   return (
-    <Card className="bg-black/40 backdrop-blur-md border border-white/10 rounded-xl p-6 h-full flex flex-col shadow-2xl">
-      <h2 className="text-xl font-semibold text-gray-300 mb-4">
-        Habit Protocols
-      </h2>
-      <form onSubmit={handleAdd} className="flex gap-2 mb-4">
+    <div className="flex flex-col h-full bg-nexus-panel/50 rounded-xl overflow-hidden">
+      <div className="p-4 border-b border-nexus-border/30 bg-black/20">
+        <h2 className="text-nexus-secondary font-bold tracking-widest text-sm uppercase">
+          Protocols
+        </h2>
+      </div>
+      <form onSubmit={handleAdd} className="p-3 flex gap-2">
         <Input
           value={newHabit}
           onChange={(e) => setNewHabit(e.target.value)}
           placeholder="New Protocol..."
-          className="bg-gray-900/50 border-gray-700 text-white"
+          className="holo-input h-9 text-xs"
         />
-        <Button type="submit" className="bg-purple-600 hover:bg-purple-500">
+        <Button
+          type="submit"
+          className="holo-button h-9 border-nexus-secondary/30 text-nexus-secondary hover:bg-nexus-secondary/10"
+        >
           +
         </Button>
       </form>
-      <div className="flex-1 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto p-3 space-y-2 custom-scrollbar">
         {habits.map((h) => (
           <div
             key={h.id}
-            className="flex items-center justify-between p-3 bg-black/40 border border-gray-700 rounded hover:border-purple-500/50 transition-colors"
+            className="flex items-center justify-between p-3 bg-black/30 border border-nexus-secondary/20 rounded hover:border-nexus-secondary/50 transition-colors"
           >
-            <span className="text-gray-200">{h.title}</span>
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-purple-400">
-                Streak: {h.streak}
+            <span className="text-nexus-text text-sm font-mono">{h.title}</span>
+            <div className="flex items-center gap-3">
+              <span className="text-[10px] text-nexus-secondary font-bold tracking-wider">
+                STREAK: {h.streak}
               </span>
               <Button
                 size="sm"
-                variant="outline"
                 onClick={() => handleIncrement(h.id)}
-                className="h-6 w-6 p-0 border-green-500/50 text-green-400"
+                className="h-6 w-6 p-0 bg-nexus-secondary/20 text-nexus-secondary border border-nexus-secondary/50 hover:bg-nexus-secondary hover:text-white transition-all"
               >
-                {" "}
-                +{" "}
+                +
               </Button>
               <button
                 onClick={async () => {
                   await deleteHabit(h.id, session.access_token);
                   loadHabits();
                 }}
-                className="text-red-500 hover:text-red-400 ml-2"
+                className="text-nexus-subtext hover:text-nexus-danger ml-1"
               >
                 ×
               </button>
@@ -89,6 +88,6 @@ export default function HabitsModule() {
           </div>
         ))}
       </div>
-    </Card>
+    </div>
   );
 }
