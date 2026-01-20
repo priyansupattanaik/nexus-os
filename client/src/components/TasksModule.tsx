@@ -1,11 +1,10 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth";
 import { fetchTasks, createTask, updateTask, deleteTask } from "@/lib/api";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useSystemStore } from "@/lib/store";
+import { GlassCard } from "@/components/ui/GlassCard";
+import { CheckSquare, Plus, Trash2, GripVertical } from "lucide-react";
 
-// Simple Drag & Drop Types
 type Task = {
   id: string;
   title: string;
@@ -25,7 +24,6 @@ export default function TasksModule() {
   const loadTasks = async () => {
     try {
       const data = await fetchTasks(session.access_token);
-      // Ensure status exists (fallback for old data)
       const cleanData = data.map((t: any) => ({
         ...t,
         status: t.status || (t.is_completed ? "done" : "todo"),
@@ -40,7 +38,6 @@ export default function TasksModule() {
     e.preventDefault();
     if (!newTask.trim()) return;
     try {
-      // Optimistic Update
       const tempId = Math.random().toString();
       const newTaskObj = {
         id: tempId,
@@ -75,11 +72,8 @@ export default function TasksModule() {
     triggerPulse("error");
   };
 
-  // Drag Handlers
-  const onDragStart = (e: React.DragEvent, id: string) => {
+  const onDragStart = (e: React.DragEvent, id: string) =>
     e.dataTransfer.setData("taskId", id);
-  };
-
   const onDrop = (
     e: React.DragEvent,
     status: "todo" | "in_progress" | "done",
@@ -87,7 +81,6 @@ export default function TasksModule() {
     const id = e.dataTransfer.getData("taskId");
     if (id) updateStatus(id, status);
   };
-
   const allowDrop = (e: React.DragEvent) => e.preventDefault();
 
   const Column = ({
@@ -102,10 +95,10 @@ export default function TasksModule() {
     <div
       onDrop={(e) => onDrop(e, status)}
       onDragOver={allowDrop}
-      className={`flex-1 min-w-[150px] flex flex-col bg-black/20 border border-${color}/20 rounded-lg overflow-hidden transition-colors hover:bg-white/5`}
+      className="flex-1 min-w-[140px] flex flex-col bg-white/[0.03] border border-white/5 rounded-lg overflow-hidden transition-colors hover:bg-white/[0.05]"
     >
       <div
-        className={`p-2 border-b border-${color}/20 text-[10px] font-bold uppercase tracking-widest text-${color} text-center`}
+        className={`p-2 border-b border-white/5 text-[10px] font-bold uppercase tracking-widest text-${color}-400 text-center`}
       >
         {title}
       </div>
@@ -117,14 +110,17 @@ export default function TasksModule() {
               key={t.id}
               draggable
               onDragStart={(e) => onDragStart(e, t.id)}
-              className="p-2 bg-black/40 border border-white/5 rounded cursor-grab active:cursor-grabbing hover:border-white/20 group relative"
+              className="p-2 bg-black/40 border border-white/5 rounded cursor-grab active:cursor-grabbing hover:border-[hsl(var(--primary)/0.5)] group relative flex items-center gap-2"
             >
-              <p className="text-xs font-mono text-gray-300">{t.title}</p>
+              <GripVertical className="w-3 h-3 text-slate-600" />
+              <p className="text-xs font-mono text-slate-300 truncate flex-1">
+                {t.title}
+              </p>
               <button
                 onClick={() => handleDelete(t.id)}
-                className="absolute top-1 right-1 text-[8px] text-red-500 opacity-0 group-hover:opacity-100 hover:text-red-400"
+                className="text-slate-600 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
               >
-                ✖
+                <Trash2 className="w-3 h-3" />
               </button>
             </div>
           ))}
@@ -133,33 +129,26 @@ export default function TasksModule() {
   );
 
   return (
-    <div className="flex flex-col h-full bg-nexus-panel/50 rounded-xl overflow-hidden">
-      <div className="p-4 border-b border-nexus-border/30 flex justify-between items-center bg-black/20">
-        <h2 className="text-[var(--nexus-accent)] font-bold tracking-widest text-sm uppercase">
-          Mission Board
-        </h2>
-      </div>
+    <GlassCard title="Mission Board" icon={<CheckSquare />}>
+      <div className="flex flex-col h-full p-4 gap-4">
+        <form onSubmit={handleAddTask} className="flex gap-2">
+          <input
+            value={newTask}
+            onChange={(e) => setNewTask(e.target.value)}
+            placeholder="New Objective..."
+            className="tech-input flex-1"
+          />
+          <button type="submit" className="tech-button px-3">
+            <Plus className="w-4 h-4" />
+          </button>
+        </form>
 
-      <form onSubmit={handleAddTask} className="p-3 flex gap-2">
-        <Input
-          value={newTask}
-          onChange={(e) => setNewTask(e.target.value)}
-          placeholder="New Directive..."
-          className="holo-input h-8 text-xs"
-        />
-        <Button
-          type="submit"
-          className="holo-button h-8 w-8 p-0 flex items-center justify-center"
-        >
-          +
-        </Button>
-      </form>
-
-      <div className="flex-1 p-3 flex gap-3 overflow-x-auto">
-        <Column title="Pending" status="todo" color="nexus-accent" />
-        <Column title="Active" status="in_progress" color="nexus-secondary" />
-        <Column title="Done" status="done" color="green-500" />
+        <div className="flex-1 flex gap-3 overflow-x-auto pb-2">
+          <Column title="Pending" status="todo" color="slate" />
+          <Column title="Active" status="in_progress" color="blue" />
+          <Column title="Done" status="done" color="green" />
+        </div>
       </div>
-    </div>
+    </GlassCard>
   );
 }

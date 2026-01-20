@@ -4,33 +4,40 @@
 
 @layer base {
   :root {
-    /* Default (Cyan) */
-    --nexus-accent: #00f3ff;
-    --nexus-secondary: #7000ff;
-    --nexus-bg: #050505;
+    /* Base Color Palette (Cyan Default) */
+    --primary: 190 100% 50%; /* #00f3ff */
+    --secondary: 270 100% 50%; /* #7000ff */
+    --bg-dark: 240 10% 3%; /* Deep Black/Blue */
+    --glass-border: 190 100% 50%;
   }
 
-  /* CHROMA SHIFT THEMES */
+  /* THEME: Crimson (Sith/Red) */
   .theme-crimson {
-    --nexus-accent: #ff0055;
-    --nexus-secondary: #ffaa00;
+    --primary: 340 100% 50%;
+    --secondary: 30 100% 50%;
+    --glass-border: 340 100% 50%;
   }
+
+  /* THEME: Amber (Retro) */
   .theme-amber {
-    --nexus-accent: #ffaa00;
-    --nexus-secondary: #00ffaa;
+    --primary: 40 100% 50%;
+    --secondary: 160 100% 50%;
+    --glass-border: 40 100% 50%;
   }
+
+  /* THEME: Violet (Synth) */
   .theme-violet {
-    --nexus-accent: #d000ff;
-    --nexus-secondary: #00f3ff;
+    --primary: 280 100% 60%;
+    --secondary: 190 100% 50%;
+    --glass-border: 280 100% 60%;
   }
 
   body {
-    background-color: var(--nexus-bg);
-    color: #e0f7fa;
+    @apply bg-black text-slate-200 antialiased overflow-x-hidden selection:bg-[hsl(var(--primary)/0.3)] selection:text-white;
     background-image:
-      radial-gradient(circle at 50% 50%, #1a1a2e 0%, #000 80%),
-      linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+      radial-gradient(circle at 50% 50%, #0a0a10 0%, #000 100%),
+      linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
     background-size:
       100% 100%,
       40px 40px,
@@ -39,45 +46,55 @@
 }
 
 @layer components {
-  /* HOLOGRAPHIC PANEL */
-  .holo-panel {
-    @apply relative bg-black/40 rounded-xl backdrop-blur-sm overflow-hidden transition-all duration-300;
-    /* Move dynamic border color here */
-    border: 1px solid rgba(0, 243, 255, 0.3); /* Fallback */
-    border-color: color-mix(in srgb, var(--nexus-accent) 30%, transparent);
-    box-shadow:
-      0 0 15px rgba(0, 0, 0, 0.5),
-      inset 0 0 20px rgba(255, 255, 255, 0.02);
+  /* HOLOGRAPHIC CARD - The core building block */
+  .glass-panel {
+    @apply relative flex flex-col bg-black/40 backdrop-blur-md rounded-xl border border-white/5 transition-all duration-300 overflow-hidden;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
   }
 
-  /* HOLOGRAPHIC INPUT */
-  .holo-input {
-    @apply bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white placeholder:text-gray-500 focus:outline-none focus:shadow-[0_0_10px_rgba(255,255,255,0.1)] transition-all font-mono;
-  }
-  .holo-input:focus {
-    border-color: var(--nexus-accent);
+  /* Active State Glow */
+  .glass-panel:hover {
+    border-color: hsl(var(--primary) / 0.3);
+    box-shadow: 0 0 20px hsl(var(--primary) / 0.1);
   }
 
-  /* HOLOGRAPHIC BUTTON */
-  .holo-button {
-    @apply font-bold py-2 px-4 rounded-lg transition-all active:scale-95 uppercase tracking-wider text-xs shadow-[0_0_10px_rgba(0,0,0,0.2)];
-    background-color: color-mix(in srgb, var(--nexus-accent) 10%, transparent);
-    color: var(--nexus-accent);
-    border: 1px solid color-mix(in srgb, var(--nexus-accent) 30%, transparent);
-  }
-  .holo-button:hover {
-    background-color: color-mix(in srgb, var(--nexus-accent) 20%, transparent);
+  /* INPUTS */
+  .tech-input {
+    @apply bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-[hsl(var(--primary)/0.5)] focus:ring-1 focus:ring-[hsl(var(--primary)/0.5)] transition-all font-mono;
   }
 
-  /* Scrollbar */
+  /* BUTTONS */
+  .tech-button {
+    @apply flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-widest transition-all active:scale-95;
+    background: linear-gradient(45deg, hsl(var(--primary) / 0.1), transparent);
+    border: 1px solid hsl(var(--primary) / 0.2);
+    color: hsl(var(--primary));
+  }
+  .tech-button:hover {
+    background: hsl(var(--primary) / 0.2);
+    border-color: hsl(var(--primary));
+    box-shadow: 0 0 15px hsl(var(--primary) / 0.3);
+  }
+
+  .tech-button-danger {
+    @apply tech-button border-red-500/30 text-red-500 bg-red-500/5;
+  }
+  .tech-button-danger:hover {
+    @apply bg-red-500/20 border-red-500 shadow-red-500/20;
+  }
+
+  /* SCROLLBAR */
   ::-webkit-scrollbar {
     width: 4px;
   }
   ::-webkit-scrollbar-track {
-    background: #050505;
+    background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: var(--nexus-accent);
+    background: hsl(var(--primary) / 0.3);
     border-radius: 2px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--primary));
   }
 }

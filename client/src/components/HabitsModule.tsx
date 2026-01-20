@@ -6,9 +6,9 @@ import {
   incrementHabit,
   deleteHabit,
 } from "@/lib/api";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useSystemStore } from "@/lib/store";
+import { GlassCard } from "@/components/ui/GlassCard";
+import { Repeat, Plus, Trash2, Flame } from "lucide-react";
 
 export default function HabitsModule() {
   const { session } = useAuth();
@@ -40,61 +40,55 @@ export default function HabitsModule() {
     loadHabits();
   };
 
-  const handleDelete = async (id: string) => {
-    triggerPulse("error");
-    await deleteHabit(id, session.access_token);
-    loadHabits();
-  };
-
   return (
-    <div className="flex flex-col h-full bg-nexus-panel/50 rounded-xl overflow-hidden transition-all hover:shadow-[0_0_20px_rgba(112,0,255,0.1)]">
-      <div className="p-4 border-b border-nexus-border/30 bg-black/20">
-        <h2 className="text-nexus-secondary font-bold tracking-widest text-sm uppercase">
-          Habits
-        </h2>
-      </div>
-      <form onSubmit={handleAdd} className="p-3 flex gap-2">
-        <Input
-          value={newHabit}
-          onChange={(e) => setNewHabit(e.target.value)}
-          placeholder="New habit..."
-          className="holo-input h-9 text-xs"
-        />
-        <Button
-          type="submit"
-          className="holo-button h-9 border-nexus-secondary/30 text-nexus-secondary hover:bg-nexus-secondary/10"
-        >
-          +
-        </Button>
-      </form>
-      <div className="flex-1 overflow-y-auto p-3 space-y-2 custom-scrollbar">
-        {habits.map((h) => (
-          <div
-            key={h.id}
-            className="flex items-center justify-between p-3 bg-black/30 border border-nexus-secondary/20 rounded hover:border-nexus-secondary/50 transition-colors"
-          >
-            <span className="text-nexus-text text-sm font-mono">{h.title}</span>
-            <div className="flex items-center gap-3">
-              <span className="text-[10px] text-nexus-secondary font-bold tracking-wider">
-                STREAK: {h.streak}
+    <GlassCard title="Protocols" icon={<Repeat />}>
+      <div className="flex flex-col h-full p-4 gap-4">
+        <form onSubmit={handleAdd} className="flex gap-2">
+          <input
+            value={newHabit}
+            onChange={(e) => setNewHabit(e.target.value)}
+            placeholder="New Protocol..."
+            className="tech-input flex-1"
+          />
+          <button type="submit" className="tech-button px-3">
+            <Plus className="w-4 h-4" />
+          </button>
+        </form>
+
+        <div className="flex-1 overflow-y-auto custom-scrollbar space-y-2 pr-2">
+          {habits.map((h) => (
+            <div
+              key={h.id}
+              className="flex items-center justify-between p-3 bg-white/[0.02] border border-white/5 rounded hover:bg-white/[0.05] transition-colors group"
+            >
+              <span className="text-sm font-mono text-slate-300">
+                {h.title}
               </span>
-              <Button
-                size="sm"
-                onClick={() => handleIncrement(h.id)}
-                className="h-6 w-6 p-0 bg-nexus-secondary/20 text-nexus-secondary border border-nexus-secondary/50 hover:bg-nexus-secondary hover:text-white transition-all"
-              >
-                +
-              </Button>
-              <button
-                onClick={() => handleDelete(h.id)}
-                className="text-nexus-subtext hover:text-nexus-danger ml-1"
-              >
-                ×
-              </button>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1 text-[hsl(var(--secondary))] bg-[hsl(var(--secondary)/0.1)] px-2 py-1 rounded">
+                  <Flame className="w-3 h-3" />
+                  <span className="text-xs font-bold">{h.streak}</span>
+                </div>
+                <button
+                  onClick={() => handleIncrement(h.id)}
+                  className="tech-button px-2 py-1 text-xs"
+                >
+                  +
+                </button>
+                <button
+                  onClick={async () => {
+                    await deleteHabit(h.id, session.access_token);
+                    loadHabits();
+                  }}
+                  className="text-slate-600 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <Trash2 className="w-3 h-3" />
+                </button>
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
-    </div>
+    </GlassCard>
   );
 }

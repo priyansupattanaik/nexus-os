@@ -17,13 +17,13 @@ interface SystemStore {
   theme: ThemeColor;
   setTheme: (theme: ThemeColor) => void;
 
-  // --- PHASE 2 NEW STATES ---
+  // Bio-Metrics
   isBioActive: boolean;
   setBioActive: (active: boolean) => void;
 
   isOverclockActive: boolean;
   setOverclockActive: (active: boolean) => void;
-  overclockProgress: number; // 0.0 to 1.0
+  overclockProgress: number;
   setOverclockProgress: (progress: number) => void;
 }
 
@@ -31,13 +31,9 @@ export const useSystemStore = create<SystemStore>((set) => ({
   mode: "IDLE",
   setMode: (mode) => set({ mode }),
   triggerPulse: (type) => {
-    if (type === "success") {
-      set({ mode: "SUCCESS" });
-      setTimeout(() => set({ mode: "IDLE" }), 1000);
-    } else if (type === "error") {
-      set({ mode: "ERROR" });
-      setTimeout(() => set({ mode: "IDLE" }), 1000);
-    }
+    if (type === "success") set({ mode: "SUCCESS" });
+    else if (type === "error") set({ mode: "ERROR" });
+    setTimeout(() => set({ mode: "IDLE" }), 1500);
   },
 
   isFocusMode: false,
@@ -49,7 +45,6 @@ export const useSystemStore = create<SystemStore>((set) => ({
   theme: "cyan",
   setTheme: (theme) => set({ theme }),
 
-  // Phase 2
   isBioActive: false,
   setBioActive: (active) => set({ isBioActive: active }),
 

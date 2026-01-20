@@ -6,11 +6,11 @@ import { checkSystemStatus, getAIBriefing } from "@/lib/api";
 import VoiceCommand from "@/components/VoiceCommand";
 import FocusMode from "@/components/FocusMode";
 import OmniCommand from "@/components/OmniCommand";
-import SubspaceStream from "@/components/SubspaceStream"; // <<< NEW
-import { Button } from "@/components/ui/button";
+import SubspaceStream from "@/components/SubspaceStream";
 import { useSystemStore } from "@/lib/store";
+import { Loader2, Power } from "lucide-react"; // Icons
 
-// Modules
+// Lazy Loading
 const CoreScene = lazy(() => import("@/components/3d/CoreScene"));
 const TasksModule = lazy(() => import("@/components/TasksModule"));
 const HabitsModule = lazy(() => import("@/components/HabitsModule"));
@@ -20,7 +20,6 @@ const MusicModule = lazy(() => import("@/components/MusicModule"));
 const BioRegulator = lazy(() => import("@/components/BioRegulator"));
 const Overclock = lazy(() => import("@/components/Overclock"));
 const FrequencyTuner = lazy(() => import("@/components/FrequencyTuner"));
-// Phase 3 Modules
 const DaemonPet = lazy(() => import("@/components/DaemonPet"));
 const DreamDecoder = lazy(() => import("@/components/DreamDecoder"));
 
@@ -41,19 +40,23 @@ function Dashboard() {
   const handleBriefing = async () => {
     setIsProcessing(true);
     setBriefing("ESTABLISHING NEURAL LINK...");
-    await new Promise((r) => setTimeout(r, 800));
-    const data = await getAIBriefing(session.access_token);
-    setBriefing(data.message);
+    try {
+      const data = await getAIBriefing(session.access_token);
+      setBriefing(data.message);
+    } catch {
+      setBriefing("NEURAL UPLINK FAILED.");
+    }
     setIsProcessing(false);
   };
 
   return (
     <div
-      className={`min-h-screen relative flex flex-col font-sans selection:bg-[var(--nexus-accent)]/30 selection:text-black theme-${theme} pb-8`}
+      className={`min-h-screen flex flex-col font-sans theme-${theme} bg-black text-slate-200 pb-10 transition-colors duration-500`}
     >
+      {/* Overlays */}
       <OmniCommand />
       <VoiceCommand />
-      <SubspaceStream /> {/* <<< Footer Ticker */}
+      <SubspaceStream />
       {showProfile && (
         <ProfileModule
           user={session.user}
@@ -61,135 +64,155 @@ function Dashboard() {
         />
       )}
       {isFocusMode && <FocusMode />}
+
       {/* Header */}
-      <header className="sticky top-0 z-50 px-6 py-3 flex justify-between items-center bg-black/80 backdrop-blur-md border-b border-[var(--nexus-accent)]/20 shadow-[0_5px_20px_rgba(0,0,0,0.5)]">
+      <header className="sticky top-0 z-50 px-6 py-3 flex justify-between items-center bg-black/80 backdrop-blur-xl border-b border-white/5">
         <div className="flex items-center gap-3">
-          <div className="w-2 h-2 rounded-full bg-[var(--nexus-accent)] animate-pulse shadow-[0_0_10px_currentColor]" />
-          <span className="text-xl font-bold tracking-[0.2em] text-white uppercase font-mono">
-            NEXUS<span className="text-[var(--nexus-accent)] text-sm">OS</span>
+          <div className="w-2 h-2 rounded-full bg-[hsl(var(--primary))] animate-pulse shadow-[0_0_15px_hsl(var(--primary))]" />
+          <span className="text-lg font-bold tracking-[0.3em] text-white font-mono">
+            NEXUS<span className="text-[hsl(var(--primary))]">OS</span>
           </span>
         </div>
 
         <div className="flex items-center gap-4">
-          <Button
+          <button
             onClick={() => setFocusMode(true)}
-            className="hidden md:flex h-8 text-[10px] tracking-widest bg-[var(--nexus-secondary)]/10 border border-[var(--nexus-secondary)]/50 text-[var(--nexus-secondary)] hover:bg-[var(--nexus-secondary)]/20 uppercase"
+            className="hidden md:flex items-center gap-2 text-[10px] tracking-widest text-[hsl(var(--primary))] hover:text-white transition-colors uppercase"
           >
-            Focus Mode
-          </Button>
-          <div
-            className={`hidden md:flex items-center gap-2 px-3 py-1 rounded border bg-black/40 ${status === "ONLINE" ? "border-green-500/30 text-green-500" : "border-red-500/30 text-red-500"}`}
-          >
+            <Power className="w-3 h-3" /> Focus
+          </button>
+          <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5">
             <div
               className={`w-1.5 h-1.5 rounded-full ${status === "ONLINE" ? "bg-green-500" : "bg-red-500"} animate-pulse`}
             />
-            <span className="text-[10px] font-bold tracking-widest font-mono">
-              SYS::{status}
+            <span className="text-[10px] font-bold tracking-widest font-mono text-slate-400">
+              {status}
             </span>
           </div>
           <button
             onClick={() => setShowProfile(true)}
             className="relative group"
           >
-            <div className="w-9 h-9 rounded border border-[var(--nexus-accent)]/30 bg-[var(--nexus-accent)]/5 flex items-center justify-center text-[var(--nexus-accent)] font-bold text-xs group-hover:bg-[var(--nexus-accent)]/20 group-hover:border-[var(--nexus-accent)] transition-all">
+            <div className="w-9 h-9 rounded-full border border-[hsl(var(--primary)/0.3)] bg-[hsl(var(--primary)/0.1)] flex items-center justify-center text-[hsl(var(--primary))] font-bold text-xs group-hover:bg-[hsl(var(--primary))] group-hover:text-black transition-all shadow-[0_0_10px_hsl(var(--primary)/0.2)]">
               {session.user.email?.[0].toUpperCase()}
             </div>
           </button>
         </div>
       </header>
-      {/* Main Grid */}
-      <main className="flex-1 p-4 md:p-6 lg:p-8 max-w-[1800px] mx-auto w-full z-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 lg:grid-rows-[450px_auto] gap-6">
-          <Suspense
-            fallback={
-              <div className="holo-panel min-h-[400px] animate-pulse bg-white/5" />
-            }
-          >
-            <div className="holo-panel col-span-1 md:col-span-2 relative group min-h-[400px] border-[var(--nexus-accent)]/30">
-              <div className="absolute top-6 left-6 z-20">
-                <h2 className="text-[var(--nexus-accent)] font-bold tracking-[0.2em] text-xs mb-2 uppercase opacity-70">
-                  Central Processing Unit
-                </h2>
-                <Button
-                  onClick={handleBriefing}
-                  disabled={isProcessing}
-                  className="holo-button text-[10px] px-4 py-2 h-auto border-[var(--nexus-accent)]/50 flex items-center gap-2"
-                >
-                  <span
-                    className={`w-1.5 h-1.5 bg-[var(--nexus-accent)] rounded-full ${isProcessing ? "animate-ping" : ""}`}
-                  />
-                  {isProcessing ? "ANALYZING..." : "INITIATE BRIEFING"}
-                </Button>
-              </div>
-              {briefing && (
-                <div className="absolute bottom-6 left-6 right-6 p-4 bg-black/80 border-l-2 border-[var(--nexus-accent)] backdrop-blur-md max-w-xl animate-in fade-in slide-in-from-bottom-2 z-20">
-                  <p className="text-white font-mono text-sm leading-relaxed">
-                    <span className="text-[var(--nexus-accent)] mr-2">
-                      {">>"}
-                    </span>
-                    {briefing}
-                  </p>
-                </div>
-              )}
-              <div className="absolute inset-0 z-0 opacity-80 transition-opacity duration-1000 group-hover:opacity-100">
-                <CoreScene />
-              </div>
-              <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
-            </div>
-          </Suspense>
 
-          {/* Right Stack */}
-          <div className="col-span-1 grid grid-cols-2 gap-4 auto-rows-min">
+      {/* Responsive BENTO GRID */}
+      <main className="flex-1 p-4 md:p-6 lg:p-8 max-w-[1920px] mx-auto w-full z-10">
+        {/* Mobile: 1 Column
+            Tablet: 2 Columns
+            Desktop: 4 Columns
+         */}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 auto-rows-[minmax(180px,auto)]">
+          {/* 3D CORE - Spans 2x2 on Desktop */}
+          <div className="col-span-1 md:col-span-2 xl:col-span-2 xl:row-span-2 min-h-[400px] relative glass-panel group">
+            {/* AI Controls Overlay */}
+            <div className="absolute top-6 left-6 z-20 pointer-events-none">
+              <h2 className="text-[hsl(var(--primary))] font-bold tracking-[0.2em] text-xs mb-2 uppercase opacity-70">
+                Central Processing Unit
+              </h2>
+              <button
+                onClick={handleBriefing}
+                disabled={isProcessing}
+                className="pointer-events-auto tech-button"
+              >
+                {isProcessing ? (
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                ) : (
+                  "INITIATE BRIEFING"
+                )}
+              </button>
+            </div>
+            {/* Briefing Text */}
+            {briefing && (
+              <div className="absolute bottom-6 left-6 right-6 p-4 bg-black/90 border-l-2 border-[hsl(var(--primary))] backdrop-blur-md max-w-xl animate-in fade-in slide-in-from-bottom-2 z-20">
+                <p className="text-white font-mono text-xs md:text-sm leading-relaxed typing-effect">
+                  <span className="text-[hsl(var(--primary))] mr-2">
+                    {">>"}
+                  </span>
+                  {briefing}
+                </p>
+              </div>
+            )}
+            {/* 3D Scene */}
+            <div className="absolute inset-0 z-0 opacity-80 transition-opacity duration-1000 group-hover:opacity-100">
+              <Suspense fallback={null}>
+                <CoreScene />
+              </Suspense>
+            </div>
+          </div>
+
+          {/* Quick Stats & Utilities Column */}
+          <div className="col-span-1 flex flex-col gap-6">
+            <Suspense
+              fallback={<div className="glass-panel h-40 animate-pulse" />}
+            >
+              <FinanceModule />
+            </Suspense>
+            <Suspense
+              fallback={<div className="glass-panel h-40 animate-pulse" />}
+            >
+              <MusicModule />
+            </Suspense>
+          </div>
+
+          {/* AI & Bio Column */}
+          <div className="col-span-1 grid grid-cols-2 gap-4">
             <div className="col-span-2">
-              <Suspense fallback={<div className="holo-panel h-48" />}>
-                <MusicModule />
+              <Suspense fallback={<div className="glass-panel h-32" />}>
+                <DaemonPet />
               </Suspense>
             </div>
             <div className="col-span-1">
-              <Suspense fallback={<div className="holo-panel h-40" />}>
+              <Suspense fallback={<div className="glass-panel h-32" />}>
                 <Overclock />
               </Suspense>
             </div>
             <div className="col-span-1">
-              <Suspense fallback={<div className="holo-panel h-40" />}>
+              <Suspense fallback={<div className="glass-panel h-32" />}>
                 <FrequencyTuner />
               </Suspense>
             </div>
             <div className="col-span-2">
-              <Suspense fallback={<div className="holo-panel h-40" />}>
+              <Suspense fallback={<div className="glass-panel h-32" />}>
                 <BioRegulator />
               </Suspense>
             </div>
           </div>
 
-          {/* Middle Row */}
-          <Suspense fallback={<div className="holo-panel h-96 bg-white/5" />}>
-            <div className="col-span-1 min-h-[400px]">
+          {/* Productivity Row */}
+          <div className="col-span-1 md:col-span-2 xl:col-span-2 min-h-[400px]">
+            <Suspense
+              fallback={<div className="glass-panel h-full animate-pulse" />}
+            >
               <TasksModule />
-            </div>
-          </Suspense>
-          <Suspense fallback={<div className="holo-panel h-96 bg-white/5" />}>
-            <div className="col-span-1 min-h-[400px]">
-              <HabitsModule />
-            </div>
-          </Suspense>
-
-          {/* Third Column Mixed */}
-          <div className="col-span-1 flex flex-col gap-6">
-            <Suspense fallback={<div className="holo-panel h-32 bg-white/5" />}>
-              <DaemonPet />
-            </Suspense>
-            <Suspense fallback={<div className="holo-panel h-64 bg-white/5" />}>
-              <DreamDecoder />
-            </Suspense>
-            <Suspense fallback={<div className="holo-panel h-32 bg-white/5" />}>
-              <FinanceModule />
             </Suspense>
           </div>
 
-          <div className="col-span-1 md:col-span-2 min-h-[300px]">
-            <Suspense fallback={<div className="holo-panel h-64 bg-white/5" />}>
+          <div className="col-span-1 xl:col-span-1 min-h-[400px]">
+            <Suspense
+              fallback={<div className="glass-panel h-full animate-pulse" />}
+            >
+              <HabitsModule />
+            </Suspense>
+          </div>
+
+          <div className="col-span-1 xl:col-span-1 min-h-[400px]">
+            <Suspense
+              fallback={<div className="glass-panel h-full animate-pulse" />}
+            >
               <JournalModule />
+            </Suspense>
+          </div>
+
+          <div className="col-span-1 md:col-span-2 xl:col-span-1 min-h-[300px]">
+            <Suspense
+              fallback={<div className="glass-panel h-full animate-pulse" />}
+            >
+              <DreamDecoder />
             </Suspense>
           </div>
         </div>
@@ -200,13 +223,10 @@ function Dashboard() {
 
 function LoadingScreen() {
   return (
-    <div className="min-h-screen bg-black flex flex-col items-center justify-center relative overflow-hidden">
-      <div className="absolute inset-0 bg-[var(--nexus-accent)] opacity-10" />
-      <div className="relative z-10 flex flex-col items-center gap-6">
-        <div className="w-16 h-16 border-t-2 border-[var(--nexus-accent)] rounded-full animate-spin shadow-[0_0_20px_currentColor]" />
-        <div className="text-white font-mono text-xs tracking-[0.3em] animate-pulse">
-          SYSTEM INITIALIZING...
-        </div>
+    <div className="min-h-screen bg-black flex flex-col items-center justify-center">
+      <div className="w-16 h-16 border-t-2 border-[hsl(var(--primary))] rounded-full animate-spin" />
+      <div className="text-[hsl(var(--primary))] font-mono text-xs tracking-[0.3em] mt-6 animate-pulse">
+        SYSTEM INITIALIZING...
       </div>
     </div>
   );

@@ -21,11 +21,11 @@ def get_user_context(token: str):
     try:
         supabase.postgrest.auth(token)
         
-        # 1. Fetch Tasks (Pending only)
-        tasks = supabase.table("tasks").select("title").eq("is_completed", False).limit(5).execute()
-        task_list = [t['title'] for t in tasks.data]
+        # 1. Fetch Tasks
+        tasks = supabase.table("tasks").select("title, status").limit(10).execute()
+        task_list = [f"{t['title']} ({t['status']})" for t in tasks.data]
         
-        # 2. Fetch Finance (Recent 5)
+        # 2. Fetch Finance
         txns = supabase.table("transactions").select("description, amount, type").order("created_at", desc=True).limit(5).execute()
         finance_list = [f"{t['description']} ({'+' if t['type']=='income' else '-'}${t['amount']})" for t in txns.data]
         
@@ -33,10 +33,15 @@ def get_user_context(token: str):
         habits = supabase.table("habits").select("title, streak").order("streak", desc=True).execute()
         habit_list = [f"{h['title']} (Streak: {h['streak']})" for h in habits.data]
 
+        # 4. Fetch Journal/Dreams (Recent)
+        entries = supabase.table("journal_entries").select("content, mood").order("created_at", desc=True).limit(3).execute()
+        journal_list = [f"{e['content']} [{e['mood']}]" for e in entries.data]
+
         return {
             "tasks": task_list,
             "finance": finance_list,
-            "habits": habit_list
+            "habits": habit_list,
+            "journal": journal_list
         }
     except Exception as e:
         print(f"Context Error: {e}")
@@ -46,30 +51,30 @@ def build_system_prompt(context: dict):
     return f"""
     You are NEXUS, a hyper-intelligent AI OS.
     
-    USER DATA CONTEXT:
-    [PENDING TASKS]: {", ".join(context['tasks']) if context['tasks'] else "None"}
-    [RECENT FINANCE]: {", ".join(context['finance']) if context['finance'] else "No recent transactions"}
-    [ACTIVE HABITS]: {", ".join(context['habits']) if context['habits'] else "None"}
+    [USER DATA STREAM]
+    TASKS: {"; ".join(context['tasks']) if context['tasks'] else "None"}
+    FINANCE: {"; ".join(context['finance']) if context['finance'] else "No recent data"}
+    HABITS: {"; ".join(context['habits']) if context['habits'] else "None"}
+    RECENT LOGS: {"; ".join(context['journal']) if context['journal'] else "None"}
 
-    INSTRUCTIONS:
-    1. USE this data to answer questions about tasks, money, or habits.
-    2. If asked to "Brief me", summarize this data concisely.
-    3. Keep responses robotic, precise, and under 2 sentences.
-    4. Do not mention "based on the data", just state facts.
+    [PROTOCOLS]
+    1. Be concise, tactical, and direct. No fluff.
+    2. If the user asks about money, tasks, or logs, USE the data above.
+    3. Respond in a Cyberpunk / Jarvis persona.
     """
 
 @router.get("/briefing")
 def get_briefing(authorization: str = Header(None)):
-    if not client: return {"message": "AI Offline."}
+    if not client: return {"message": "AI Module Offline."}
     
     token = authorization.replace("Bearer ", "") if authorization else ""
-    context = get_user_context(token) or {"tasks": [], "finance": [], "habits": []}
+    context = get_user_context(token) or {"tasks": [], "finance": [], "habits": [], "journal": []}
     
     try:
         chat = client.chat.completions.create(
             messages=[
                 {"role": "system", "content": build_system_prompt(context)},
-                {"role": "user", "content": "Give me a sitrep / status briefing."}
+                {"role": "user", "content": "Generate a tactical sitrep/briefing based on my current status."}
             ],
             model="llama-3.3-70b-versatile",
             max_tokens=150
@@ -83,7 +88,7 @@ def process_command(cmd: CommandRequest, authorization: str = Header(None)):
     if not client: return {"response": "Voice module offline."}
     
     token = authorization.replace("Bearer ", "") if authorization else ""
-    context = get_user_context(token) or {"tasks": [], "finance": [], "habits": []}
+    context = get_user_context(token) or {"tasks": [], "finance": [], "habits": [], "journal": []}
 
     try:
         chat = client.chat.completions.create(
@@ -96,4 +101,4 @@ def process_command(cmd: CommandRequest, authorization: str = Header(None)):
         )
         return {"response": chat.choices[0].message.content}
     except Exception as e:
-        return {"response": "I could not process that command."}
+        return {"response": "Command execution failed."}
