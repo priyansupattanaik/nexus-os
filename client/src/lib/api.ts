@@ -10,15 +10,22 @@ export const checkSystemStatus = async () => {
   }
 };
 
-export const getAIBriefing = async () => {
-  const res = await fetch(`${API_URL}/ai/briefing`);
+export const getAIBriefing = async (token: string) => {
+  // <<< UPDATED: Requires Token
+  const res = await fetch(`${API_URL}/ai/briefing`, {
+    headers: { Authorization: `Bearer ${token}` }, // <<< Sends Token
+  });
   return res.json();
 };
 
-export const sendVoiceCommand = async (command: string) => {
+export const sendVoiceCommand = async (command: string, token: string) => {
+  // <<< UPDATED: Requires Token
   const res = await fetch(`${API_URL}/ai/command`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
     body: JSON.stringify({ command }),
   });
   return res.json();
@@ -115,7 +122,7 @@ export const deleteTransaction = async (id: string, token: string) => {
   });
 };
 
-// --- Journal (NEW) ---
+// --- Journal ---
 export const fetchJournal = async (token: string) => {
   const res = await fetch(`${API_URL}/journal/`, {
     headers: { Authorization: `Bearer ${token}` },

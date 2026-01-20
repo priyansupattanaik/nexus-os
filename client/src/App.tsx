@@ -27,8 +27,11 @@ function Dashboard() {
   const handleBriefing = async () => {
     setIsProcessing(true);
     setBriefing("ESTABLISHING NEURAL LINK...");
-    await new Promise((r) => setTimeout(r, 800)); // Tactical delay
-    const data = await getAIBriefing();
+    await new Promise((r) => setTimeout(r, 800));
+
+    // <<< UPDATED: Pass the access token here >>>
+    const data = await getAIBriefing(session.access_token);
+
     setBriefing(data.message);
     setIsProcessing(false);
   };
@@ -84,9 +87,8 @@ function Dashboard() {
       {/* --- Main Command Grid --- */}
       <main className="flex-1 p-4 md:p-6 lg:p-8 max-w-[1800px] mx-auto w-full z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 lg:grid-rows-[450px_auto] gap-6">
-          {/* CORE SCENE - The Central Intelligence */}
+          {/* CORE SCENE */}
           <div className="holo-panel col-span-1 md:col-span-2 relative group min-h-[400px] border-nexus-accent/30">
-            {/* Controls */}
             <div className="absolute top-6 left-6 z-20">
               <h2 className="text-nexus-accent font-bold tracking-[0.2em] text-xs mb-2 uppercase opacity-70">
                 Central Processing Unit
@@ -103,7 +105,6 @@ function Dashboard() {
               </Button>
             </div>
 
-            {/* AI Output Stream */}
             {briefing && (
               <div className="absolute bottom-6 left-6 right-6 p-4 bg-black/80 border-l-2 border-nexus-accent backdrop-blur-md max-w-xl animate-in fade-in slide-in-from-bottom-2 z-20">
                 <p className="text-nexus-text font-mono text-sm leading-relaxed">
@@ -113,31 +114,22 @@ function Dashboard() {
               </div>
             )}
 
-            {/* 3D Viewport */}
             <div className="absolute inset-0 z-0 opacity-80 transition-opacity duration-1000 group-hover:opacity-100">
               <CoreScene />
             </div>
 
-            {/* Background Grid Lines */}
             <div className="absolute inset-0 bg-[linear-gradient(rgba(0,243,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,243,255,0.03)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
           </div>
 
-          {/* FINANCE MODULE - Compact Data */}
           <div className="col-span-1 min-h-[300px]">
             <FinanceModule />
           </div>
-
-          {/* TASKS MODULE - High Priority */}
           <div className="col-span-1 min-h-[400px]">
             <TasksModule />
           </div>
-
-          {/* HABITS MODULE - Routine Tracking */}
           <div className="col-span-1 min-h-[400px]">
             <HabitsModule />
           </div>
-
-          {/* JOURNAL MODULE - Logs */}
           <div className="col-span-1 min-h-[300px]">
             <JournalModule />
           </div>
@@ -147,7 +139,6 @@ function Dashboard() {
   );
 }
 
-// Cyberpunk Loading Screen
 function LoadingScreen() {
   return (
     <div className="min-h-screen bg-black flex flex-col items-center justify-center relative overflow-hidden">
