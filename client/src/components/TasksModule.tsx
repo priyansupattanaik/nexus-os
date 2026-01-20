@@ -7,7 +7,7 @@ import { useSystemStore } from "@/lib/store";
 
 export default function TasksModule() {
   const { session } = useAuth();
-  const { triggerPulse } = useSystemStore(); // <<< Connect to Core
+  const { triggerPulse } = useSystemStore();
   const [tasks, setTasks] = useState<any[]>([]);
   const [newTask, setNewTask] = useState("");
 
@@ -31,7 +31,7 @@ export default function TasksModule() {
       const task = await createTask(newTask, session.access_token);
       setTasks([task, ...tasks]);
       setNewTask("");
-      triggerPulse("success"); // <<< FLASH GREEN
+      triggerPulse("success");
     } catch (e) {
       triggerPulse("error");
     }
@@ -41,13 +41,13 @@ export default function TasksModule() {
     setTasks(
       tasks.map((t) => (t.id === id ? { ...t, is_completed: !status } : t)),
     );
-    triggerPulse("neutral"); // <<< Small Pulse
+    triggerPulse("neutral");
     await updateTask(id, { is_completed: !status }, session.access_token);
   };
 
   const handleDelete = async (id: string) => {
     setTasks(tasks.filter((t) => t.id !== id));
-    triggerPulse("error"); // <<< FLASH RED
+    triggerPulse("error");
     await deleteTask(id, session.access_token);
   };
 
@@ -55,10 +55,10 @@ export default function TasksModule() {
     <div className="flex flex-col h-full bg-nexus-panel/50 rounded-xl overflow-hidden transition-all hover:shadow-[0_0_20px_rgba(0,243,255,0.1)]">
       <div className="p-4 border-b border-nexus-border/30 flex justify-between items-center bg-black/20">
         <h2 className="text-nexus-accent font-bold tracking-widest text-sm uppercase">
-          Directives
+          Tasks
         </h2>
         <span className="text-[10px] text-nexus-subtext font-mono bg-nexus-accent/10 px-2 py-0.5 rounded border border-nexus-accent/20">
-          {tasks.filter((t) => !t.is_completed).length} ACTIVE
+          {tasks.filter((t) => !t.is_completed).length} PENDING
         </span>
       </div>
 
@@ -66,7 +66,7 @@ export default function TasksModule() {
         <Input
           value={newTask}
           onChange={(e) => setNewTask(e.target.value)}
-          placeholder="New Directive..."
+          placeholder="Add a new task..."
           className="holo-input h-9 text-xs"
         />
         <Button

@@ -35,7 +35,7 @@ export default function HabitsModule() {
   };
 
   const handleIncrement = async (id: string) => {
-    triggerPulse("success"); // Reinforce positive behavior
+    triggerPulse("success");
     await incrementHabit(id, session.access_token);
     loadHabits();
   };
@@ -50,14 +50,14 @@ export default function HabitsModule() {
     <div className="flex flex-col h-full bg-nexus-panel/50 rounded-xl overflow-hidden transition-all hover:shadow-[0_0_20px_rgba(112,0,255,0.1)]">
       <div className="p-4 border-b border-nexus-border/30 bg-black/20">
         <h2 className="text-nexus-secondary font-bold tracking-widest text-sm uppercase">
-          Protocols
+          Habits
         </h2>
       </div>
       <form onSubmit={handleAdd} className="p-3 flex gap-2">
         <Input
           value={newHabit}
           onChange={(e) => setNewHabit(e.target.value)}
-          placeholder="New Protocol..."
+          placeholder="New habit..."
           className="holo-input h-9 text-xs"
         />
         <Button

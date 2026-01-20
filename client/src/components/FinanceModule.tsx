@@ -15,10 +15,39 @@ export default function FinanceModule() {
   const [txns, setTxns] = useState<any[]>([]);
   const [desc, setDesc] = useState("");
   const [amount, setAmount] = useState("");
+  const [currency, setCurrency] = useState("$");
 
   useEffect(() => {
-    if (session) loadData();
+    if (session) {
+      loadData();
+      detectCurrency();
+    }
   }, [session]);
+
+  const detectCurrency = () => {
+    try {
+      // Auto-detect browser locale
+      const format = new Intl.NumberFormat(navigator.language, {
+        style: "currency",
+        currency: "USD",
+      });
+      // We try to guess the local symbol. If locale is 'en-IN', this usually defaults to ₹ if we don't force USD.
+      // Let's rely on a mapping or a smart guesser.
+      const userLocale = navigator.language;
+      if (userLocale === "en-IN" || userLocale === "hi-IN") setCurrency("₹");
+      else if (userLocale.includes("GB")) setCurrency("£");
+      else if (
+        userLocale.includes("EU") ||
+        userLocale.includes("DE") ||
+        userLocale.includes("FR")
+      )
+        setCurrency("€");
+      else setCurrency("$");
+    } catch {
+      setCurrency("$");
+    }
+  };
+
   const loadData = async () => {
     try {
       setTxns(await fetchTransactions(session.access_token));
@@ -33,7 +62,7 @@ export default function FinanceModule() {
     );
     setDesc("");
     setAmount("");
-    triggerPulse("success"); // Money moves trigger the system
+    triggerPulse("success");
     loadData();
   };
 
@@ -52,12 +81,13 @@ export default function FinanceModule() {
     <div className="flex flex-col h-full bg-nexus-panel/50 rounded-xl overflow-hidden transition-all hover:shadow-[0_0_20px_rgba(0,255,157,0.1)]">
       <div className="p-4 border-b border-nexus-border/30 bg-black/20 flex justify-between items-end">
         <h2 className="text-nexus-accent font-bold tracking-widest text-sm uppercase">
-          Ledger
+          Finances
         </h2>
         <div
           className={`text-xl font-mono font-bold ${balance >= 0 ? "text-nexus-success" : "text-nexus-danger"}`}
         >
-          ${balance.toFixed(2)}
+          {currency}
+          {balance.toFixed(2)}
         </div>
       </div>
       <div className="p-3 space-y-2">
@@ -106,7 +136,9 @@ export default function FinanceModule() {
                     : "text-nexus-danger"
                 }
               >
-                {t.type === "income" ? "+" : "-"}${t.amount}
+                {t.type === "income" ? "+" : "-"}
+                {currency}
+                {t.amount}
               </span>
               <button
                 onClick={() => handleDelete(t.id)}
