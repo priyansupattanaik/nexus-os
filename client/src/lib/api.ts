@@ -1,43 +1,38 @@
-// If we have a specific URL (Production), use it.
-// Otherwise, fall back to the proxy (Localhost).
 const API_URL = import.meta.env.VITE_API_URL || "/api";
 
 // --- System & AI ---
-
 export const checkSystemStatus = async () => {
   try {
-    const response = await fetch(`${API_URL}/health`);
-    if (!response.ok) throw new Error("Server Error");
-    return await response.json();
-  } catch (error) {
-    console.error("NEXUS Core Unreachable:", error);
+    const res = await fetch(`${API_URL}/health`);
+    return res.ok ? await res.json() : { status: "offline" };
+  } catch {
     return { status: "offline" };
   }
 };
 
 export const getAIBriefing = async () => {
-  try {
-    const response = await fetch(`${API_URL}/ai/briefing`);
-    if (!response.ok) throw new Error("AI Error");
-    return await response.json();
-  } catch (error) {
-    console.error("AI Failed:", error);
-    return { message: "Neural Link Offline." };
-  }
+  const res = await fetch(`${API_URL}/ai/briefing`);
+  return res.json();
 };
 
-// --- Tasks Module ---
+export const sendVoiceCommand = async (command: string) => {
+  const res = await fetch(`${API_URL}/ai/command`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ command }),
+  });
+  return res.json();
+};
 
+// --- Tasks ---
 export const fetchTasks = async (token: string) => {
-  const response = await fetch(`${API_URL}/tasks/`, {
+  const res = await fetch(`${API_URL}/tasks/`, {
     headers: { Authorization: `Bearer ${token}` },
   });
-  if (!response.ok) throw new Error("Failed to fetch tasks");
-  return await response.json();
+  return res.json();
 };
-
 export const createTask = async (title: string, token: string) => {
-  const response = await fetch(`${API_URL}/tasks/`, {
+  const res = await fetch(`${API_URL}/tasks/`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -45,12 +40,10 @@ export const createTask = async (title: string, token: string) => {
     },
     body: JSON.stringify({ title }),
   });
-  if (!response.ok) throw new Error("Failed to create task");
-  return await response.json();
+  return res.json();
 };
-
 export const updateTask = async (id: string, updates: any, token: string) => {
-  const response = await fetch(`${API_URL}/tasks/${id}`, {
+  await fetch(`${API_URL}/tasks/${id}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
@@ -58,15 +51,66 @@ export const updateTask = async (id: string, updates: any, token: string) => {
     },
     body: JSON.stringify(updates),
   });
-  if (!response.ok) throw new Error("Failed to update task");
-  return await response.json();
 };
-
 export const deleteTask = async (id: string, token: string) => {
-  const response = await fetch(`${API_URL}/tasks/${id}`, {
+  await fetch(`${API_URL}/tasks/${id}`, {
     method: "DELETE",
     headers: { Authorization: `Bearer ${token}` },
   });
-  if (!response.ok) throw new Error("Failed to delete task");
-  return await response.json();
+};
+
+// --- Habits ---
+export const fetchHabits = async (token: string) => {
+  const res = await fetch(`${API_URL}/habits/`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return res.json();
+};
+export const createHabit = async (title: string, token: string) => {
+  const res = await fetch(`${API_URL}/habits/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ title }),
+  });
+  return res.json();
+};
+export const incrementHabit = async (id: string, token: string) => {
+  await fetch(`${API_URL}/habits/${id}/increment`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+};
+export const deleteHabit = async (id: string, token: string) => {
+  await fetch(`${API_URL}/habits/${id}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+};
+
+// --- Finance ---
+export const fetchTransactions = async (token: string) => {
+  const res = await fetch(`${API_URL}/finance/`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return res.json();
+};
+export const addTransaction = async (data: any, token: string) => {
+  const res = await fetch(`${API_URL}/finance/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+  return res.json();
+};
+export const deleteTransaction = async (id: string, token: string) => {
+  await fetch(`${API_URL}/finance/${id}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
 };
