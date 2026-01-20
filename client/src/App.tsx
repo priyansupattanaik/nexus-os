@@ -7,6 +7,7 @@ import CoreScene from "@/components/3d/CoreScene";
 import TasksModule from "@/components/TasksModule";
 import HabitsModule from "@/components/HabitsModule";
 import FinanceModule from "@/components/FinanceModule";
+import JournalModule from "@/components/JournalModule"; // <<< NEW IMPORT
 import VoiceCommand from "@/components/VoiceCommand";
 import { Button } from "@/components/ui/button";
 
@@ -17,21 +18,16 @@ function Dashboard() {
   const [showProfile, setShowProfile] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // System Health Check on Mount
   useEffect(() => {
     checkSystemStatus().then((d) =>
       setStatus(d.status === "healthy" ? "ONLINE" : "OFFLINE"),
     );
   }, []);
 
-  // AI Briefing Handler
   const handleBriefing = async () => {
     setIsProcessing(true);
     setBriefing("Establishing Neural Link...");
-
-    // Smooth artificial delay for "Tactile" feel
     await new Promise((r) => setTimeout(r, 1000));
-
     const data = await getAIBriefing();
     setBriefing(data.message);
     setIsProcessing(false);
@@ -67,8 +63,6 @@ function Dashboard() {
           >
             SYSTEM: {status}
           </div>
-
-          {/* User Avatar Button */}
           <button
             onClick={() => setShowProfile(true)}
             className="w-9 h-9 rounded-full bg-gradient-to-tr from-nexus-accent to-purple-600 p-[1px] hover:scale-105 transition-transform"
@@ -83,9 +77,8 @@ function Dashboard() {
       {/* --- Main Bento Grid Layout --- */}
       <main className="flex-1 p-4 md:p-6 lg:p-8 max-w-[1600px] mx-auto w-full z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 lg:grid-rows-[400px_auto] gap-6 h-full">
-          {/* HERO SECTION: Glass Tesseract (Spans 2 cols on Desktop) */}
+          {/* HERO: Glass Tesseract */}
           <div className="glass-panel col-span-1 md:col-span-2 relative overflow-hidden group min-h-[350px]">
-            {/* Control Overlay */}
             <div className="absolute top-6 left-6 z-20 flex flex-col gap-2">
               <h2 className="text-2xl font-bold text-white mb-1">
                 Neural Core
@@ -98,8 +91,6 @@ function Dashboard() {
                 {isProcessing ? "Processing..." : "Initialize Briefing"}
               </Button>
             </div>
-
-            {/* AI Output Stream */}
             {briefing && (
               <div className="absolute bottom-6 left-6 right-6 p-4 rounded-xl bg-black/60 backdrop-blur-xl border border-white/10 text-sm md:text-base leading-relaxed text-gray-200 animate-in fade-in slide-in-from-bottom-4 z-20 max-w-2xl">
                 <span className="text-nexus-accent font-bold text-xs uppercase tracking-wider block mb-2">
@@ -108,24 +99,21 @@ function Dashboard() {
                 {briefing}
               </div>
             )}
-
-            {/* 3D Scene Container */}
             <div className="absolute inset-0 z-0 opacity-80 transition-opacity duration-1000 group-hover:opacity-100">
               <CoreScene />
             </div>
           </div>
 
-          {/* FINANCE MODULE (Top Right on Desktop) */}
+          {/* FINANCE MODULE */}
           <div className="glass-panel col-span-1 min-h-[300px] md:min-h-auto flex flex-col">
             <div className="flex-1 overflow-hidden p-1">
-              {/* Wrapping existing module in a div to ensure it fits the glass theme */}
               <div className="h-full [&>div]:h-full [&>div]:bg-transparent [&>div]:border-none [&>div]:shadow-none">
                 <FinanceModule />
               </div>
             </div>
           </div>
 
-          {/* TASKS MODULE (Bottom Left) */}
+          {/* TASKS MODULE */}
           <div className="glass-panel col-span-1 min-h-[400px] flex flex-col">
             <div className="flex-1 overflow-hidden p-1">
               <div className="h-full [&>div]:h-full [&>div]:bg-transparent [&>div]:border-none [&>div]:shadow-none">
@@ -134,7 +122,7 @@ function Dashboard() {
             </div>
           </div>
 
-          {/* HABITS MODULE (Bottom Middle) */}
+          {/* HABITS MODULE */}
           <div className="glass-panel col-span-1 min-h-[400px] flex flex-col">
             <div className="flex-1 overflow-hidden p-1">
               <div className="h-full [&>div]:h-full [&>div]:bg-transparent [&>div]:border-none [&>div]:shadow-none">
@@ -143,14 +131,12 @@ function Dashboard() {
             </div>
           </div>
 
-          {/* JOURNAL / UPCOMING (Bottom Right - Placeholder) */}
-          <div className="glass-panel col-span-1 min-h-[200px] flex items-center justify-center relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent" />
-            <div className="text-center z-10 opacity-50">
-              <div className="text-4xl mb-2">🔒</div>
-              <p className="text-xs font-mono uppercase tracking-widest">
-                Journal Locked
-              </p>
+          {/* JOURNAL MODULE (Previously Locked) */}
+          <div className="glass-panel col-span-1 min-h-[300px] flex flex-col">
+            <div className="flex-1 overflow-hidden p-1">
+              <div className="h-full [&>div]:h-full [&>div]:bg-transparent [&>div]:border-none [&>div]:shadow-none">
+                <JournalModule />
+              </div>
             </div>
           </div>
         </div>
@@ -159,7 +145,6 @@ function Dashboard() {
   );
 }
 
-// Loading State with Apple-style spinner
 function LoadingScreen() {
   return (
     <div className="min-h-screen bg-black flex flex-col items-center justify-center">

@@ -114,3 +114,28 @@ export const deleteTransaction = async (id: string, token: string) => {
     headers: { Authorization: `Bearer ${token}` },
   });
 };
+
+// --- Journal (NEW) ---
+export const fetchJournal = async (token: string) => {
+  const res = await fetch(`${API_URL}/journal/`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return res.json();
+};
+export const createEntry = async (content: string, token: string) => {
+  const res = await fetch(`${API_URL}/journal/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ content, mood: "focused" }),
+  });
+  return res.json();
+};
+export const deleteEntry = async (id: string, token: string) => {
+  await fetch(`${API_URL}/journal/${id}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+};
