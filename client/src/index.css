@@ -4,86 +4,98 @@
 
 @layer base {
   :root {
-    /* Base Color Palette (Cyan Default) */
-    --primary: 190 100% 50%; /* #00f3ff */
-    --secondary: 270 100% 50%; /* #7000ff */
-    --bg-dark: 240 10% 3%; /* Deep Black/Blue */
-    --glass-border: 190 100% 50%;
-  }
-
-  /* THEME: Crimson (Sith/Red) */
-  .theme-crimson {
-    --primary: 340 100% 50%;
-    --secondary: 30 100% 50%;
-    --glass-border: 340 100% 50%;
-  }
-
-  /* THEME: Amber (Retro) */
-  .theme-amber {
-    --primary: 40 100% 50%;
-    --secondary: 160 100% 50%;
-    --glass-border: 40 100% 50%;
-  }
-
-  /* THEME: Violet (Synth) */
-  .theme-violet {
-    --primary: 280 100% 60%;
-    --secondary: 190 100% 50%;
-    --glass-border: 280 100% 60%;
+    /* Typography */
+    --font-sans:
+      "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+      "Helvetica Neue", Arial, sans-serif;
   }
 
   body {
-    @apply bg-black text-slate-200 antialiased overflow-x-hidden selection:bg-[hsl(var(--primary)/0.3)] selection:text-white;
-    background-image:
-      radial-gradient(circle at 50% 50%, #0a0a10 0%, #000 100%),
-      linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
-    background-size:
-      100% 100%,
-      40px 40px,
-      40px 40px;
+    @apply antialiased text-slate-100 overflow-x-hidden selection:bg-blue-500/30 selection:text-white;
+    font-family: var(--font-sans);
+
+    /* The "Deep Bloom" Wallpaper */
+    background:
+      radial-gradient(
+        circle at 10% 20%,
+        rgba(56, 189, 248, 0.08),
+        transparent 40%
+      ),
+      radial-gradient(
+        circle at 90% 80%,
+        rgba(139, 92, 246, 0.1),
+        transparent 40%
+      ),
+      radial-gradient(
+        circle at 50% 50%,
+        rgba(15, 23, 42, 0.8),
+        transparent 100%
+      ),
+      linear-gradient(to bottom right, #020617, #0f172a, #1e1b4b);
+    background-attachment: fixed;
+    background-size: cover;
   }
 }
 
 @layer components {
-  /* HOLOGRAPHIC CARD - The core building block */
-  .glass-panel {
-    @apply relative flex flex-col bg-black/40 backdrop-blur-md rounded-xl border border-white/5 transition-all duration-300 overflow-hidden;
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+  /* --- THE GLASS PANEL (Windows Acrylic + macOS Shape) --- */
+  .os-panel {
+    @apply relative flex flex-col bg-white/[0.03] backdrop-blur-2xl border border-white/[0.08] rounded-3xl shadow-2xl transition-all duration-300 overflow-hidden;
+    box-shadow: 0 20px 40px -4px rgba(0, 0, 0, 0.4);
   }
 
-  /* Active State Glow */
-  .glass-panel:hover {
-    border-color: hsl(var(--primary) / 0.3);
-    box-shadow: 0 0 20px hsl(var(--primary) / 0.1);
+  .os-panel:hover {
+    @apply bg-white/[0.06] border-white/[0.15];
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    transform: translateY(-2px);
   }
 
-  /* INPUTS */
-  .tech-input {
-    @apply bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-[hsl(var(--primary)/0.5)] focus:ring-1 focus:ring-[hsl(var(--primary)/0.5)] transition-all font-mono;
+  /* --- INPUT FIELDS (Soft & Tactile) --- */
+  .os-input {
+    @apply bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:bg-black/30 transition-all font-medium;
   }
 
-  /* BUTTONS */
-  .tech-button {
-    @apply flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-widest transition-all active:scale-95;
-    background: linear-gradient(45deg, hsl(var(--primary) / 0.1), transparent);
-    border: 1px solid hsl(var(--primary) / 0.2);
-    color: hsl(var(--primary));
-  }
-  .tech-button:hover {
-    background: hsl(var(--primary) / 0.2);
-    border-color: hsl(var(--primary));
-    box-shadow: 0 0 15px hsl(var(--primary) / 0.3);
-  }
-
-  .tech-button-danger {
-    @apply tech-button border-red-500/30 text-red-500 bg-red-500/5;
-  }
-  .tech-button-danger:hover {
-    @apply bg-red-500/20 border-red-500 shadow-red-500/20;
+  /* --- BUTTONS (Pill-shaped & Gradient) --- */
+  .os-btn {
+    @apply flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-xs tracking-wide uppercase transition-all active:scale-95 select-none;
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.08),
+      rgba(255, 255, 255, 0.02)
+    );
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.9);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
   }
 
-  /* SCROLLBAR */
+  .os-btn:hover {
+    @apply bg-white/10 border-white/20 text-white;
+  }
+
+  /* Primary Action Button */
+  .os-btn-primary {
+    @apply border-blue-500/30 text-white shadow-lg shadow-blue-500/20;
+    background: linear-gradient(
+      180deg,
+      rgba(59, 130, 246, 0.4),
+      rgba(37, 99, 235, 0.2)
+    );
+  }
+  .os-btn-primary:hover {
+    @apply border-blue-400/50;
+    background: linear-gradient(
+      180deg,
+      rgba(59, 130, 246, 0.6),
+      rgba(37, 99, 235, 0.4)
+    );
+  }
+
+  /* Danger Button */
+  .os-btn-danger {
+    @apply border-red-500/30 text-red-200 hover:text-white hover:border-red-500/50 hover:bg-red-500/20;
+  }
+
+  /* --- SCROLLBAR (Invisible until hovered) --- */
   ::-webkit-scrollbar {
     width: 4px;
   }
@@ -91,10 +103,10 @@
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: hsl(var(--primary) / 0.3);
-    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--primary));
+    background: rgba(255, 255, 255, 0.3);
   }
 }

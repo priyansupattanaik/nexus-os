@@ -22,7 +22,6 @@ export default function JournalModule() {
     } catch (e) {}
   };
 
-  // Speech to Text
   useEffect(() => {
     const SpeechRecognition =
       (window as any).SpeechRecognition ||
@@ -67,50 +66,56 @@ export default function JournalModule() {
       action={
         <button
           onClick={toggleRecord}
-          className={`p-2 rounded-full border transition-all ${isRecording ? "bg-red-500/20 border-red-500 text-red-500 animate-pulse" : "border-white/10 text-slate-400 hover:text-white"}`}
+          className={`p-2 rounded-xl border transition-all duration-300 ${isRecording ? "bg-red-500/20 border-red-500 text-red-400 animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.4)]" : "border-white/10 text-slate-400 hover:text-white hover:bg-white/10"}`}
         >
           {isRecording ? (
-            <MicOff className="w-3 h-3" />
+            <MicOff className="w-3.5 h-3.5" />
           ) : (
-            <Mic className="w-3 h-3" />
+            <Mic className="w-3.5 h-3.5" />
           )}
         </button>
       }
     >
-      <div className="flex flex-col h-full p-4 gap-4">
-        <div className="flex gap-2">
+      <div className="flex flex-col h-full p-5 gap-5">
+        <div className="flex gap-3">
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder={isRecording ? "Listening..." : "Entry..."}
-            className="tech-input flex-1 min-h-[60px] resize-none"
+            placeholder={
+              isRecording ? "Listening to neural input..." : "Log entry..."
+            }
+            className="os-input flex-1 min-h-[70px] resize-none leading-relaxed"
           />
-          <button onClick={handlePost} className="tech-button px-3">
+          <button onClick={handlePost} className="os-btn os-btn-primary px-4">
             <Send className="w-4 h-4" />
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto custom-scrollbar space-y-3 pr-2">
+        <div className="flex-1 overflow-y-auto pr-1 space-y-3">
           {entries.map((e) => (
             <div
               key={e.id}
-              className="p-3 bg-white/[0.02] border border-white/5 rounded relative group hover:border-[hsl(var(--primary)/0.3)] transition-colors"
+              className="p-4 bg-white/5 border border-white/5 rounded-2xl relative group hover:bg-white/10 transition-all"
             >
-              <p className="text-xs text-slate-300 font-mono whitespace-pre-wrap leading-relaxed">
+              <p className="text-sm text-slate-300 font-medium whitespace-pre-wrap leading-relaxed">
                 {e.content}
               </p>
-              <div className="flex justify-between items-center mt-2 pt-2 border-t border-white/5">
-                <span className="text-[10px] text-slate-500 font-mono uppercase">
-                  {new Date(e.created_at).toLocaleDateString()}
+              <div className="flex justify-between items-center mt-3 pt-3 border-t border-white/5">
+                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">
+                  {new Date(e.created_at).toLocaleDateString()} •{" "}
+                  {new Date(e.created_at).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
                 </span>
                 <button
                   onClick={async () => {
                     await deleteEntry(e.id, session.access_token);
                     loadData();
                   }}
-                  className="text-slate-600 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="text-slate-500 hover:text-rose-400 opacity-0 group-hover:opacity-100 transition-all"
                 >
-                  <Trash2 className="w-3 h-3" />
+                  <Trash2 className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>

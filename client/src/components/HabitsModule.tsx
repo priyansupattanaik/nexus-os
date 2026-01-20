@@ -42,36 +42,36 @@ export default function HabitsModule() {
 
   return (
     <GlassCard title="Protocols" icon={<Repeat />}>
-      <div className="flex flex-col h-full p-4 gap-4">
-        <form onSubmit={handleAdd} className="flex gap-2">
+      <div className="flex flex-col h-full p-5 gap-5">
+        <form onSubmit={handleAdd} className="flex gap-3">
           <input
             value={newHabit}
             onChange={(e) => setNewHabit(e.target.value)}
-            placeholder="New Protocol..."
-            className="tech-input flex-1"
+            placeholder="New protocol..."
+            className="os-input flex-1"
           />
-          <button type="submit" className="tech-button px-3">
+          <button type="submit" className="os-btn os-btn-primary">
             <Plus className="w-4 h-4" />
           </button>
         </form>
 
-        <div className="flex-1 overflow-y-auto custom-scrollbar space-y-2 pr-2">
+        <div className="flex-1 overflow-y-auto pr-1 space-y-3">
           {habits.map((h) => (
             <div
               key={h.id}
-              className="flex items-center justify-between p-3 bg-white/[0.02] border border-white/5 rounded hover:bg-white/[0.05] transition-colors group"
+              className="flex items-center justify-between p-3.5 bg-white/5 border border-white/5 rounded-xl hover:border-white/10 transition-all group"
             >
-              <span className="text-sm font-mono text-slate-300">
+              <span className="text-sm font-medium text-slate-200">
                 {h.title}
               </span>
               <div className="flex items-center gap-3">
-                <div className="flex items-center gap-1 text-[hsl(var(--secondary))] bg-[hsl(var(--secondary)/0.1)] px-2 py-1 rounded">
-                  <Flame className="w-3 h-3" />
+                <div className="flex items-center gap-1.5 text-amber-400 bg-amber-400/10 border border-amber-400/20 px-2.5 py-1 rounded-lg">
+                  <Flame className="w-3.5 h-3.5" />
                   <span className="text-xs font-bold">{h.streak}</span>
                 </div>
                 <button
                   onClick={() => handleIncrement(h.id)}
-                  className="tech-button px-2 py-1 text-xs"
+                  className="os-btn px-3 py-1.5 text-xs hover:bg-blue-500 hover:border-blue-500 hover:text-white transition-colors"
                 >
                   +
                 </button>
@@ -80,9 +80,9 @@ export default function HabitsModule() {
                     await deleteHabit(h.id, session.access_token);
                     loadHabits();
                   }}
-                  className="text-slate-600 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="text-slate-500 hover:text-rose-400 opacity-0 group-hover:opacity-100 transition-all"
                 >
-                  <Trash2 className="w-3 h-3" />
+                  <Trash2 className="w-4 h-4" />
                 </button>
               </div>
             </div>
