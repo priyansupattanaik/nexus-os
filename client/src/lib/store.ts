@@ -6,14 +6,16 @@ interface SystemStore {
   mode: SystemState;
   setMode: (mode: SystemState) => void;
   triggerPulse: (type: "success" | "error" | "neutral") => void;
+
+  // NEW: Focus Mode
+  isFocusMode: boolean;
+  setFocusMode: (active: boolean) => void;
 }
 
 export const useSystemStore = create<SystemStore>((set) => ({
   mode: "IDLE",
   setMode: (mode) => set({ mode }),
   triggerPulse: (type) => {
-    // Pulse logic can be expanded here if needed
-    // For now, we just rely on 'mode' changes or transient states
     if (type === "success") {
       set({ mode: "SUCCESS" });
       setTimeout(() => set({ mode: "IDLE" }), 1000);
@@ -22,4 +24,8 @@ export const useSystemStore = create<SystemStore>((set) => ({
       setTimeout(() => set({ mode: "IDLE" }), 1000);
     }
   },
+
+  // NEW
+  isFocusMode: false,
+  setFocusMode: (active) => set({ isFocusMode: active }),
 }));

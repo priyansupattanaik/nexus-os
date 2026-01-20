@@ -9,10 +9,13 @@ import HabitsModule from "@/components/HabitsModule";
 import FinanceModule from "@/components/FinanceModule";
 import JournalModule from "@/components/JournalModule";
 import VoiceCommand from "@/components/VoiceCommand";
+import FocusMode from "@/components/FocusMode"; // <<< NEW IMPORT
 import { Button } from "@/components/ui/button";
+import { useSystemStore } from "@/lib/store"; // <<< NEW IMPORT
 
 function Dashboard() {
   const { session } = useAuth();
+  const { isFocusMode, setFocusMode } = useSystemStore(); // <<< NEW STATE
   const [status, setStatus] = useState("INITIALIZING...");
   const [briefing, setBriefing] = useState("");
   const [showProfile, setShowProfile] = useState(false);
@@ -28,17 +31,14 @@ function Dashboard() {
     setIsProcessing(true);
     setBriefing("ESTABLISHING NEURAL LINK...");
     await new Promise((r) => setTimeout(r, 800));
-
-    // <<< UPDATED: Pass the access token here >>>
     const data = await getAIBriefing(session.access_token);
-
     setBriefing(data.message);
     setIsProcessing(false);
   };
 
   return (
     <div className="min-h-screen relative flex flex-col font-sans selection:bg-nexus-accent/30 selection:text-black">
-      {/* Voice Assistant Overlay */}
+      {/* --- OVERLAYS --- */}
       <VoiceCommand />
       {showProfile && (
         <ProfileModule
@@ -46,6 +46,7 @@ function Dashboard() {
           onClose={() => setShowProfile(false)}
         />
       )}
+      {isFocusMode && <FocusMode />}
 
       {/* --- Holographic Header --- */}
       <header className="sticky top-0 z-50 px-6 py-3 flex justify-between items-center bg-black/80 backdrop-blur-md border-b border-nexus-border/20 shadow-[0_5px_20px_rgba(0,0,0,0.5)]">
@@ -57,7 +58,15 @@ function Dashboard() {
         </div>
 
         <div className="flex items-center gap-4">
-          {/* System Status Badge */}
+          {/* Focus Mode Trigger */}
+          <Button
+            onClick={() => setFocusMode(true)}
+            className="hidden md:flex h-8 text-[10px] tracking-widest bg-nexus-secondary/10 border border-nexus-secondary/50 text-nexus-secondary hover:bg-nexus-secondary/20 uppercase"
+          >
+            Focus Mode
+          </Button>
+
+          {/* System Status */}
           <div
             className={`hidden md:flex items-center gap-2 px-3 py-1 rounded border bg-black/40 ${status === "ONLINE" ? "border-nexus-success/30 text-nexus-success" : "border-nexus-danger/30 text-nexus-danger"}`}
           >
@@ -69,7 +78,7 @@ function Dashboard() {
             </span>
           </div>
 
-          {/* Profile Button */}
+          {/* Profile */}
           <button
             onClick={() => setShowProfile(true)}
             className="relative group"
@@ -77,14 +86,13 @@ function Dashboard() {
             <div className="w-9 h-9 rounded border border-nexus-accent/30 bg-nexus-accent/5 flex items-center justify-center text-nexus-accent font-bold text-xs group-hover:bg-nexus-accent/20 group-hover:border-nexus-accent transition-all shadow-[0_0_10px_rgba(0,243,255,0.1)]">
               {session.user.email?.[0].toUpperCase()}
             </div>
-            {/* Tech Corners */}
             <div className="absolute -top-px -left-px w-2 h-2 border-t border-l border-nexus-accent opacity-50 group-hover:opacity-100 transition-opacity" />
             <div className="absolute -bottom-px -right-px w-2 h-2 border-b border-r border-nexus-accent opacity-50 group-hover:opacity-100 transition-opacity" />
           </button>
         </div>
       </header>
 
-      {/* --- Main Command Grid --- */}
+      {/* --- Main Grid --- */}
       <main className="flex-1 p-4 md:p-6 lg:p-8 max-w-[1800px] mx-auto w-full z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 lg:grid-rows-[450px_auto] gap-6">
           {/* CORE SCENE */}
@@ -104,7 +112,6 @@ function Dashboard() {
                 {isProcessing ? "ANALYZING DATASTREAM..." : "INITIATE BRIEFING"}
               </Button>
             </div>
-
             {briefing && (
               <div className="absolute bottom-6 left-6 right-6 p-4 bg-black/80 border-l-2 border-nexus-accent backdrop-blur-md max-w-xl animate-in fade-in slide-in-from-bottom-2 z-20">
                 <p className="text-nexus-text font-mono text-sm leading-relaxed">
@@ -113,11 +120,9 @@ function Dashboard() {
                 </p>
               </div>
             )}
-
             <div className="absolute inset-0 z-0 opacity-80 transition-opacity duration-1000 group-hover:opacity-100">
               <CoreScene />
             </div>
-
             <div className="absolute inset-0 bg-[linear-gradient(rgba(0,243,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,243,255,0.03)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
           </div>
 
