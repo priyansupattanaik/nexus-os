@@ -3,6 +3,7 @@ import Login from "@/components/Login";
 import { useEffect, useState } from "react";
 import { checkSystemStatus, getAIBriefing } from "@/lib/api";
 import CoreScene from "@/components/3d/CoreScene";
+import TasksModule from "@/components/TasksModule"; // <<< Import new module
 import { Button } from "@/components/ui/button";
 
 function Dashboard() {
@@ -21,7 +22,7 @@ function Dashboard() {
     setThinking(true);
     setBriefing("Analyzing system parameters...");
 
-    // Artificial delay for effect (optional, feels more 'computery')
+    // Artificial delay for effect
     await new Promise((r) => setTimeout(r, 800));
 
     const data = await getAIBriefing();
@@ -56,9 +57,9 @@ function Dashboard() {
       </header>
 
       {/* Main Grid */}
-      <main className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <main className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1">
         {/* 3D Visualization Module */}
-        <section className="col-span-1 md:col-span-2 lg:col-span-1 relative bg-black/50 border border-gray-800 rounded-lg overflow-hidden h-[500px]">
+        <section className="col-span-1 relative bg-black/50 border border-gray-800 rounded-lg overflow-hidden h-[500px] md:h-auto">
           <div className="absolute top-4 left-4 z-10">
             <Button
               variant="secondary"
@@ -89,35 +90,9 @@ function Dashboard() {
           )}
         </section>
 
-        {/* Directives Module */}
-        <section className="bg-black/40 backdrop-blur-md border border-white/10 rounded-xl p-6 space-y-4 h-fit shadow-2xl">
-          <h2 className="text-xl font-semibold text-gray-300">Directives</h2>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-black/40 p-4 rounded border border-gray-700 hover:border-blue-500 cursor-pointer transition-colors group">
-              <h3 className="text-nexus-accent group-hover:text-white transition-colors">
-                Tasks
-              </h3>
-              <p className="text-xs text-gray-500">0 Pending</p>
-            </div>
-            <div className="bg-black/40 p-4 rounded border border-gray-700 hover:border-blue-500 cursor-pointer transition-colors group">
-              <h3 className="text-nexus-accent group-hover:text-white transition-colors">
-                Habits
-              </h3>
-              <p className="text-xs text-gray-500">System Ready</p>
-            </div>
-            <div className="bg-black/40 p-4 rounded border border-gray-700 hover:border-blue-500 cursor-pointer transition-colors group">
-              <h3 className="text-nexus-accent group-hover:text-white transition-colors">
-                Finance
-              </h3>
-              <p className="text-xs text-gray-500">Tracking Active</p>
-            </div>
-            <div className="bg-black/40 p-4 rounded border border-gray-700 hover:border-blue-500 cursor-pointer transition-colors group">
-              <h3 className="text-nexus-accent group-hover:text-white transition-colors">
-                Journal
-              </h3>
-              <p className="text-xs text-gray-500">Log Entry</p>
-            </div>
-          </div>
+        {/* Directives (Tasks) Module - Replaces the old placeholders */}
+        <section className="col-span-1 h-[500px] md:h-auto">
+          <TasksModule />
         </section>
       </main>
     </div>
