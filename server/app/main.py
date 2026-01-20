@@ -1,12 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from mangum import Mangum
-from app.services.db import supabase  # <<< NEW: Import from centralized service
-from app.api import ai, tasks       # <<< NEW: Import the tasks router
+from app.services.db import supabase
+from app.api import ai, tasks, habits, finance  # <<< Import new modules
 
 app = FastAPI(title="NEXUS API")
 
-# CORS Configuration
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"], 
@@ -15,9 +14,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Register Routers
+# Register all routers
 app.include_router(ai.router, prefix="/api/ai", tags=["AI"])
-app.include_router(tasks.router, prefix="/api/tasks", tags=["Tasks"]) # <<< NEW: Register tasks
+app.include_router(tasks.router, prefix="/api/tasks", tags=["Tasks"])
+app.include_router(habits.router, prefix="/api/habits", tags=["Habits"])   # <<< NEW
+app.include_router(finance.router, prefix="/api/finance", tags=["Finance"]) # <<< NEW
 
 @app.get("/")
 def read_root():
@@ -25,19 +26,6 @@ def read_root():
 
 @app.get("/api/health")
 def health_check():
-    db_status = "disconnected"
-    if supabase:
-        try:
-            # Simple check to see if we can talk to Supabase
-            # We just check the auth service status indirectly or assume connected if client exists
-            db_status = "connected"
-        except Exception as e:
-            db_status = f"error: {str(e)}"
-    
-    return {
-        "status": "healthy", 
-        "database": db_status,
-        "ai": "standby"
-    }
+    return {"status": "healthy"}
 
 handler = Mangum(app)
