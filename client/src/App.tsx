@@ -1,21 +1,23 @@
 import { AuthProvider, useAuth } from "@/lib/auth";
 import Login from "@/components/Login";
 import ProfileModule from "@/components/ProfileModule";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense, lazy } from "react";
 import { checkSystemStatus, getAIBriefing } from "@/lib/api";
-import CoreScene from "@/components/3d/CoreScene";
-import TasksModule from "@/components/TasksModule";
-import HabitsModule from "@/components/HabitsModule";
-import FinanceModule from "@/components/FinanceModule";
-import JournalModule from "@/components/JournalModule";
 import VoiceCommand from "@/components/VoiceCommand";
-import FocusMode from "@/components/FocusMode"; // <<< NEW IMPORT
+import FocusMode from "@/components/FocusMode";
 import { Button } from "@/components/ui/button";
-import { useSystemStore } from "@/lib/store"; // <<< NEW IMPORT
+import { useSystemStore } from "@/lib/store";
+
+// --- OPTIMIZATION: Lazy Load Heavy Modules ---
+const CoreScene = lazy(() => import("@/components/3d/CoreScene"));
+const TasksModule = lazy(() => import("@/components/TasksModule"));
+const HabitsModule = lazy(() => import("@/components/HabitsModule"));
+const FinanceModule = lazy(() => import("@/components/FinanceModule"));
+const JournalModule = lazy(() => import("@/components/JournalModule"));
 
 function Dashboard() {
   const { session } = useAuth();
-  const { isFocusMode, setFocusMode } = useSystemStore(); // <<< NEW STATE
+  const { isFocusMode, setFocusMode } = useSystemStore();
   const [status, setStatus] = useState("INITIALIZING...");
   const [briefing, setBriefing] = useState("");
   const [showProfile, setShowProfile] = useState(false);
@@ -66,7 +68,6 @@ function Dashboard() {
             Focus Mode
           </Button>
 
-          {/* System Status */}
           <div
             className={`hidden md:flex items-center gap-2 px-3 py-1 rounded border bg-black/40 ${status === "ONLINE" ? "border-nexus-success/30 text-nexus-success" : "border-nexus-danger/30 text-nexus-danger"}`}
           >
@@ -78,7 +79,6 @@ function Dashboard() {
             </span>
           </div>
 
-          {/* Profile */}
           <button
             onClick={() => setShowProfile(true)}
             className="relative group"
@@ -92,52 +92,84 @@ function Dashboard() {
         </div>
       </header>
 
-      {/* --- Main Grid --- */}
+      {/* --- Main Grid (Lazy Loaded) --- */}
       <main className="flex-1 p-4 md:p-6 lg:p-8 max-w-[1800px] mx-auto w-full z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 lg:grid-rows-[450px_auto] gap-6">
-          {/* CORE SCENE */}
-          <div className="holo-panel col-span-1 md:col-span-2 relative group min-h-[400px] border-nexus-accent/30">
-            <div className="absolute top-6 left-6 z-20">
-              <h2 className="text-nexus-accent font-bold tracking-[0.2em] text-xs mb-2 uppercase opacity-70">
-                Central Processing Unit
-              </h2>
-              <Button
-                onClick={handleBriefing}
-                disabled={isProcessing}
-                className="holo-button text-[10px] px-4 py-2 h-auto border-nexus-accent/50 flex items-center gap-2"
-              >
-                <span
-                  className={`w-1.5 h-1.5 bg-nexus-accent rounded-full ${isProcessing ? "animate-ping" : ""}`}
-                />
-                {isProcessing ? "ANALYZING DATASTREAM..." : "INITIATE BRIEFING"}
-              </Button>
-            </div>
-            {briefing && (
-              <div className="absolute bottom-6 left-6 right-6 p-4 bg-black/80 border-l-2 border-nexus-accent backdrop-blur-md max-w-xl animate-in fade-in slide-in-from-bottom-2 z-20">
-                <p className="text-nexus-text font-mono text-sm leading-relaxed">
-                  <span className="text-nexus-accent mr-2">{">>"}</span>
-                  {briefing}
-                </p>
+          <Suspense
+            fallback={
+              <div className="holo-panel min-h-[400px] animate-pulse bg-white/5" />
+            }
+          >
+            {/* CORE SCENE */}
+            <div className="holo-panel col-span-1 md:col-span-2 relative group min-h-[400px] border-nexus-accent/30">
+              <div className="absolute top-6 left-6 z-20">
+                <h2 className="text-nexus-accent font-bold tracking-[0.2em] text-xs mb-2 uppercase opacity-70">
+                  Central Processing Unit
+                </h2>
+                <Button
+                  onClick={handleBriefing}
+                  disabled={isProcessing}
+                  className="holo-button text-[10px] px-4 py-2 h-auto border-nexus-accent/50 flex items-center gap-2"
+                >
+                  <span
+                    className={`w-1.5 h-1.5 bg-nexus-accent rounded-full ${isProcessing ? "animate-ping" : ""}`}
+                  />
+                  {isProcessing
+                    ? "ANALYZING DATASTREAM..."
+                    : "INITIATE BRIEFING"}
+                </Button>
               </div>
-            )}
-            <div className="absolute inset-0 z-0 opacity-80 transition-opacity duration-1000 group-hover:opacity-100">
-              <CoreScene />
+              {briefing && (
+                <div className="absolute bottom-6 left-6 right-6 p-4 bg-black/80 border-l-2 border-nexus-accent backdrop-blur-md max-w-xl animate-in fade-in slide-in-from-bottom-2 z-20">
+                  <p className="text-nexus-text font-mono text-sm leading-relaxed">
+                    <span className="text-nexus-accent mr-2">{">>"}</span>
+                    {briefing}
+                  </p>
+                </div>
+              )}
+              <div className="absolute inset-0 z-0 opacity-80 transition-opacity duration-1000 group-hover:opacity-100">
+                <CoreScene />
+              </div>
+              <div className="absolute inset-0 bg-[linear-gradient(rgba(0,243,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,243,255,0.03)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
             </div>
-            <div className="absolute inset-0 bg-[linear-gradient(rgba(0,243,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,243,255,0.03)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
-          </div>
+          </Suspense>
 
-          <div className="col-span-1 min-h-[300px]">
-            <FinanceModule />
-          </div>
-          <div className="col-span-1 min-h-[400px]">
-            <TasksModule />
-          </div>
-          <div className="col-span-1 min-h-[400px]">
-            <HabitsModule />
-          </div>
-          <div className="col-span-1 min-h-[300px]">
-            <JournalModule />
-          </div>
+          <Suspense
+            fallback={
+              <div className="holo-panel min-h-[300px] animate-pulse bg-white/5" />
+            }
+          >
+            <div className="col-span-1 min-h-[300px]">
+              <FinanceModule />
+            </div>
+          </Suspense>
+          <Suspense
+            fallback={
+              <div className="holo-panel min-h-[400px] animate-pulse bg-white/5" />
+            }
+          >
+            <div className="col-span-1 min-h-[400px]">
+              <TasksModule />
+            </div>
+          </Suspense>
+          <Suspense
+            fallback={
+              <div className="holo-panel min-h-[400px] animate-pulse bg-white/5" />
+            }
+          >
+            <div className="col-span-1 min-h-[400px]">
+              <HabitsModule />
+            </div>
+          </Suspense>
+          <Suspense
+            fallback={
+              <div className="holo-panel min-h-[300px] animate-pulse bg-white/5" />
+            }
+          >
+            <div className="col-span-1 min-h-[300px]">
+              <JournalModule />
+            </div>
+          </Suspense>
         </div>
       </main>
     </div>

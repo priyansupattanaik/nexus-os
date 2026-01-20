@@ -7,7 +7,7 @@ interface SystemStore {
   setMode: (mode: SystemState) => void;
   triggerPulse: (type: "success" | "error" | "neutral") => void;
 
-  // NEW: Focus Mode
+  // NEW: Focus Mode State
   isFocusMode: boolean;
   setFocusMode: (active: boolean) => void;
 }
@@ -25,7 +25,7 @@ export const useSystemStore = create<SystemStore>((set) => ({
     }
   },
 
-  // NEW
+  // Focus Mode Actions
   isFocusMode: false,
   setFocusMode: (active) => set({ isFocusMode: active }),
 }));
