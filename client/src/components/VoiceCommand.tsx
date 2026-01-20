@@ -8,178 +8,204 @@ export default function VoiceCommand() {
   const { session } = useAuth();
   const { setMode } = useSystemStore();
 
-  const [active, setActive] = useState(false); // Master switch
-  const [wakeWordDetected, setWakeWordDetected] = useState(false);
-  const [processing, setProcessing] = useState(false);
-  const [transcript, setTranscript] = useState("");
-  const [response, setResponse] = useState("");
+  // UI State
+  const [isListening, setIsListening] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [statusText, setStatusText] = useState("OFFLINE");
+  const [displayText, setDisplayText] = useState("");
 
+  // Logic Refs (These persist without re-rendering)
   const recognitionRef = useRef<any>(null);
+  const isActiveRef = useRef(false); // Master Switch
+  const isWakeWordRef = useRef(false); // Did we hear "Hey Nexus"?
+  const silenceTimer = useRef<any>(null);
 
-  // Initialize Speech Engine
   useEffect(() => {
+    // Initialize Speech Engine ONCE
     const SpeechRecognition =
       (window as any).SpeechRecognition ||
       (window as any).webkitSpeechRecognition;
-    if (SpeechRecognition) {
-      const recognition = new SpeechRecognition();
-      recognition.continuous = false; // We restart manually to keep it robust
-      recognition.interimResults = true;
-      recognition.lang = "en-US";
 
-      recognition.onstart = () => {
-        // Only visual feedback if we are actively processing a command,
-        // otherwise we are just silently listening for wake word.
-        if (wakeWordDetected) setMode("LISTENING");
-      };
+    if (!SpeechRecognition) {
+      setDisplayText("VOICE NOT SUPPORTED");
+      return;
+    }
 
-      recognition.onresult = (event: any) => {
-        const current = event.resultIndex;
-        const text = event.results[current][0].transcript.toLowerCase();
-        setTranscript(text);
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false; // We handle the loop manually for better stability
+    recognition.interimResults = true;
+    recognition.lang = "en-US";
 
-        // Wake Word Logic
-        if (
-          !wakeWordDetected &&
-          (text.includes("hey nexus") || text.includes("nexus"))
-        ) {
-          setWakeWordDetected(true);
+    recognition.onstart = () => {
+      setIsListening(true);
+      if (isWakeWordRef.current) setMode("LISTENING");
+    };
+
+    recognition.onresult = (event: any) => {
+      // Clear silence timer if user is talking
+      if (silenceTimer.current) clearTimeout(silenceTimer.current);
+
+      const current = event.resultIndex;
+      const transcript = event.results[current][0].transcript.toLowerCase();
+      setDisplayText(transcript);
+
+      // Phase 1: Waiting for Wake Word
+      if (!isWakeWordRef.current) {
+        if (transcript.includes("hey nexus") || transcript.includes("nexus")) {
+          // WAKE UP!
+          isWakeWordRef.current = true;
           setMode("LISTENING");
-          // Play a sci-fi activation sound
+          setStatusText("LISTENING...");
+
+          // Audio Feedback
           const audio = new Audio(
             "https://actions.google.com/sounds/v1/science_fiction/scifi_hightech_beep.ogg",
           );
+          audio.volume = 0.5;
           audio.play().catch(() => {});
         }
-      };
+      }
+    };
 
-      recognition.onend = () => {
-        if (wakeWordDetected && transcript && !processing) {
-          // We have a command!
-          const commandText = transcript
-            .replace("hey nexus", "")
-            .replace("nexus", "")
-            .trim();
-          if (commandText.length > 2) {
-            handleCommand(commandText);
-          } else {
-            // Spoken wake word but no command yet
-            // Keep waiting (restart)
-            recognition.start();
-          }
-        } else if (active && !processing) {
-          // Just restart the loop to keep listening for wake word
-          recognition.start();
-        } else {
-          setMode("IDLE");
+    recognition.onend = () => {
+      setIsListening(false);
+
+      // If the loop is supposed to be active, restart it instantly
+      if (isActiveRef.current) {
+        // If we heard the wake word recently, check if we have a command
+        if (isWakeWordRef.current && !isProcessing) {
+          // Use a small delay to grab the final transcript state is tricky in refs,
+          // so we rely on the logic that continuous processing happens elsewhere.
+          // If we ended and are processing, do nothing.
+          // If we ended and simply stopped speaking:
+          // Check if we need to process a command
+          // (Logic moved to silence timer for better flow)
         }
-      };
 
-      recognitionRef.current = recognition;
+        // INSTANT RESTART (The "Infinite Loop")
+        try {
+          recognition.start();
+        } catch {}
+      } else {
+        setMode("IDLE");
+        setStatusText("OFFLINE");
+      }
+    };
+
+    recognitionRef.current = recognition;
+
+    // Cleanup
+    return () => {
+      isActiveRef.current = false;
+      recognition.stop();
+    };
+  }, []); // Dependency Array is EMPTY to prevent reloading
+
+  // Handling the Command Logic via Effect to access latest State
+  useEffect(() => {
+    if (isWakeWordRef.current && displayText && !isProcessing) {
+      // Debounce: Wait 1.5s of silence before sending command
+      if (silenceTimer.current) clearTimeout(silenceTimer.current);
+
+      silenceTimer.current = setTimeout(() => {
+        const cleanCommand = displayText
+          .replace("hey nexus", "")
+          .replace("nexus", "")
+          .trim();
+        if (cleanCommand.length > 3) {
+          executeCommand(cleanCommand);
+        }
+      }, 1500); // Wait 1.5 seconds after user stops talking
     }
-  }, [active, wakeWordDetected, transcript, processing]);
+  }, [displayText]);
 
-  const startListeningLoop = () => {
-    setActive(true);
-    setResponse("VOICE SYSTEM ACTIVE. SAY 'HEY NEXUS'");
-    recognitionRef.current?.start();
-  };
-
-  const stopListeningLoop = () => {
-    setActive(false);
-    setWakeWordDetected(false);
-    setTranscript("");
-    setResponse("VOICE SYSTEM STANDBY");
-    recognitionRef.current?.stop();
-    setMode("IDLE");
+  const toggleSystem = () => {
+    if (isActiveRef.current) {
+      // Turn OFF
+      isActiveRef.current = false;
+      isWakeWordRef.current = false;
+      recognitionRef.current?.stop();
+      setStatusText("OFFLINE");
+      setDisplayText("");
+      setMode("IDLE");
+    } else {
+      // Turn ON
+      isActiveRef.current = true;
+      recognitionRef.current?.start();
+      setStatusText("STANDBY - SAY 'HEY NEXUS'");
+    }
   };
 
   const speak = (text: string) => {
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
-    let voices = window.speechSynthesis.getVoices();
-    const selectVoice = () => {
-      const preferred = voices.find(
-        (v) =>
-          v.name.includes("Google US English") || v.name.includes("Samantha"),
-      );
-      if (preferred) utterance.voice = preferred;
-      utterance.rate = 1.1;
-      utterance.pitch = 0.9;
-      window.speechSynthesis.speak(utterance);
-    };
-
-    if (voices.length === 0) {
-      window.speechSynthesis.onvoiceschanged = () => {
-        voices = window.speechSynthesis.getVoices();
-        selectVoice();
-      };
-    } else {
-      selectVoice();
-    }
+    // Attempt to find a better voice
+    const voices = window.speechSynthesis.getVoices();
+    const aiVoice = voices.find(
+      (v) =>
+        v.name.includes("Google US English") || v.name.includes("Samantha"),
+    );
+    if (aiVoice) utterance.voice = aiVoice;
+    utterance.rate = 1.1;
+    utterance.pitch = 1.0;
+    window.speechSynthesis.speak(utterance);
   };
 
-  const handleCommand = async (command: string) => {
-    setProcessing(true);
+  const executeCommand = async (cmd: string) => {
+    setIsProcessing(true);
     setMode("PROCESSING");
-    setResponse("ANALYZING...");
+    setStatusText("ANALYZING...");
+
+    // Reset wake word so we don't loop
+    isWakeWordRef.current = false;
 
     try {
-      // <<< UPDATED: Pass token to AI >>>
-      const data = await sendVoiceCommand(command, session?.access_token || "");
-
-      setResponse(data.response);
+      const data = await sendVoiceCommand(cmd, session?.access_token || "");
+      setDisplayText(data.response);
       speak(data.response);
       setMode("SUCCESS");
-
-      // Reset state after command is done
-      setTimeout(() => {
-        setWakeWordDetected(false); // Go back to waiting for wake word
-        setProcessing(false);
-        setTranscript("");
-        setMode("IDLE");
-        // Loop restarts automatically via onend
-      }, 4000); // Wait for speech to finish roughly
     } catch (e) {
+      setDisplayText("CONNECTION ERROR");
       setMode("ERROR");
-      setResponse("CONNECTION FAILED.");
-      setProcessing(false);
-      setWakeWordDetected(false);
+    } finally {
+      setIsProcessing(false);
+      setStatusText("STANDBY");
+      // Loop continues automatically via onend -> start
     }
   };
 
   return (
     <div className="fixed bottom-8 right-8 z-50 flex flex-col items-end gap-3">
-      {(transcript || response) && active && (
-        <div className="holo-panel p-4 max-w-xs text-right animate-in fade-in slide-in-from-right-10 border-r-4 border-r-nexus-accent">
+      {/* Holographic Feedback Panel */}
+      {isActiveRef.current && (
+        <div
+          className={`holo-panel p-4 max-w-xs text-right animate-in fade-in slide-in-from-right-10 border-r-4 ${isWakeWordRef.current ? "border-r-nexus-accent" : "border-r-gray-600"}`}
+        >
           <p className="text-xs text-nexus-subtext font-mono uppercase tracking-widest mb-1">
-            {processing
-              ? "PROCESSING..."
-              : wakeWordDetected
-                ? "LISTENING..."
-                : "STANDBY"}
+            {statusText}
           </p>
-          <p className="text-nexus-text font-medium text-sm leading-relaxed">
-            {transcript || response}
+          <p className="text-nexus-text font-medium text-sm leading-relaxed min-h-[20px]">
+            {displayText}
           </p>
         </div>
       )}
 
+      {/* The Reactor Button */}
       <Button
-        onClick={active ? stopListeningLoop : startListeningLoop}
+        onClick={toggleSystem}
         className={`rounded-full w-16 h-16 border-2 transition-all duration-300 shadow-[0_0_30px_rgba(0,0,0,0.5)] flex items-center justify-center relative overflow-hidden group ${
-          active
-            ? wakeWordDetected
-              ? "bg-red-500/20 border-red-500 animate-pulse"
-              : "bg-nexus-accent/20 border-nexus-accent"
+          isActiveRef.current
+            ? isWakeWordRef.current
+              ? "bg-red-500/20 border-red-500 animate-pulse shadow-[0_0_50px_rgba(255,0,0,0.4)]"
+              : "bg-nexus-accent/10 border-nexus-accent"
             : "bg-white/5 border-white/20 hover:border-nexus-accent"
         }`}
       >
         <div
-          className={`absolute inset-0 border border-current rounded-full opacity-30 ${wakeWordDetected ? "animate-ping" : ""}`}
+          className={`absolute inset-0 border border-current rounded-full opacity-30 ${isWakeWordRef.current ? "animate-ping" : ""}`}
         />
         <span className="relative z-10 text-2xl">
-          {active ? (wakeWordDetected ? "●" : "👂") : "🔇"}
+          {isActiveRef.current ? (isWakeWordRef.current ? "●" : "👂") : "🔇"}
         </span>
       </Button>
     </div>
