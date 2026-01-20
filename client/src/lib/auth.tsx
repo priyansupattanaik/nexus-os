@@ -9,11 +9,13 @@ export const supabase = createClient(supabaseUrl, supabaseKey);
 type AuthContextType = {
   session: any;
   loading: boolean;
+  signOut: () => Promise<void>; // Added this
 };
 
 const AuthContext = createContext<AuthContextType>({
   session: null,
   loading: true,
+  signOut: async () => {}, // Default empty function
 });
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -36,8 +38,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => subscription.unsubscribe();
   }, []);
 
+  const signOut = async () => {
+    await supabase.auth.signOut();
+  };
+
   return (
-    <AuthContext.Provider value={{ session, loading }}>
+    <AuthContext.Provider value={{ session, loading, signOut }}>
       {!loading && children}
     </AuthContext.Provider>
   );
