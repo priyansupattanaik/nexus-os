@@ -3,9 +3,11 @@ import { useAuth } from "@/lib/auth";
 import { fetchTasks, createTask, updateTask, deleteTask } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useSystemStore } from "@/lib/store";
 
 export default function TasksModule() {
   const { session } = useAuth();
+  const { triggerPulse } = useSystemStore(); // <<< Connect to Core
   const [tasks, setTasks] = useState<any[]>([]);
   const [newTask, setNewTask] = useState("");
 
@@ -24,25 +26,33 @@ export default function TasksModule() {
   const handleAddTask = async (e: any) => {
     e.preventDefault();
     if (!newTask.trim()) return;
-    const task = await createTask(newTask, session.access_token);
-    setTasks([task, ...tasks]);
-    setNewTask("");
+
+    try {
+      const task = await createTask(newTask, session.access_token);
+      setTasks([task, ...tasks]);
+      setNewTask("");
+      triggerPulse("success"); // <<< FLASH GREEN
+    } catch (e) {
+      triggerPulse("error");
+    }
   };
 
   const toggleTask = async (id: string, status: boolean) => {
     setTasks(
       tasks.map((t) => (t.id === id ? { ...t, is_completed: !status } : t)),
     );
+    triggerPulse("neutral"); // <<< Small Pulse
     await updateTask(id, { is_completed: !status }, session.access_token);
   };
 
   const handleDelete = async (id: string) => {
     setTasks(tasks.filter((t) => t.id !== id));
+    triggerPulse("error"); // <<< FLASH RED
     await deleteTask(id, session.access_token);
   };
 
   return (
-    <div className="flex flex-col h-full bg-nexus-panel/50 rounded-xl overflow-hidden">
+    <div className="flex flex-col h-full bg-nexus-panel/50 rounded-xl overflow-hidden transition-all hover:shadow-[0_0_20px_rgba(0,243,255,0.1)]">
       <div className="p-4 border-b border-nexus-border/30 flex justify-between items-center bg-black/20">
         <h2 className="text-nexus-accent font-bold tracking-widest text-sm uppercase">
           Directives

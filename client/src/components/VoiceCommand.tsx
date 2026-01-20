@@ -1,68 +1,99 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { sendVoiceCommand } from "@/lib/api";
+import { useSystemStore } from "@/lib/store";
 
 export default function VoiceCommand() {
+  const { setMode } = useSystemStore(); // <<< Connect to Neural Link
   const [listening, setListening] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [transcript, setTranscript] = useState("");
   const [response, setResponse] = useState("");
   const recognitionRef = useRef<any>(null);
 
-  // Initialize Speech Recognition
+  // Initialize Speech
   useEffect(() => {
     const SpeechRecognition =
       (window as any).SpeechRecognition ||
       (window as any).webkitSpeechRecognition;
     if (SpeechRecognition) {
       const recognition = new SpeechRecognition();
-      recognition.continuous = false; // Set to false to auto-stop after speaking
+      recognition.continuous = false;
       recognition.interimResults = true;
       recognition.lang = "en-US";
 
-      recognition.onstart = () => setListening(true);
+      recognition.onstart = () => {
+        setListening(true);
+        setMode("LISTENING"); // <<< Tell Core to turn RED
+      };
 
       recognition.onresult = (event: any) => {
         const current = event.resultIndex;
-        const transcriptText = event.results[current][0].transcript;
-        setTranscript(transcriptText);
+        setTranscript(event.results[current][0].transcript);
       };
 
       recognition.onend = async () => {
         setListening(false);
         if (transcript) {
-          await handleCommand(transcript);
+          handleCommand(transcript);
+        } else {
+          setMode("IDLE"); // Reset if silence
         }
       };
 
       recognitionRef.current = recognition;
     }
-  }, [transcript]); // Re-bind if needed, though mostly stable
+  }, [transcript]);
+
+  const speak = (text: string) => {
+    // Robust Speech Engine
+    window.speechSynthesis.cancel(); // Stop any previous speech
+    const utterance = new SpeechSynthesisUtterance(text);
+
+    // Force Voice Load
+    let voices = window.speechSynthesis.getVoices();
+    const selectVoice = () => {
+      const preferred = voices.find(
+        (v) =>
+          v.name.includes("Google US English") || v.name.includes("Samantha"),
+      );
+      if (preferred) utterance.voice = preferred;
+
+      utterance.rate = 1.1;
+      utterance.pitch = 0.9;
+      window.speechSynthesis.speak(utterance);
+    };
+
+    if (voices.length === 0) {
+      window.speechSynthesis.onvoiceschanged = () => {
+        voices = window.speechSynthesis.getVoices();
+        selectVoice();
+      };
+    } else {
+      selectVoice();
+    }
+  };
 
   const handleCommand = async (command: string) => {
     setProcessing(true);
-    setResponse("Analyzing...");
+    setMode("PROCESSING"); // <<< Tell Core to turn PURPLE
+    setResponse("ANALYZING...");
 
-    // Send to Llama 3 AI
-    const data = await sendVoiceCommand(command);
-    setResponse(data.response);
-    setProcessing(false);
-    setTranscript("");
+    try {
+      const data = await sendVoiceCommand(command);
+      setResponse(data.response);
+      speak(data.response); // <<< Speak Result
+      setMode("SUCCESS"); // <<< Tell Core to Flash GREEN
 
-    // Enhanced Text-to-Speech (Human-like tuning)
-    const speech = new SpeechSynthesisUtterance(data.response);
-    const voices = window.speechSynthesis.getVoices();
-
-    // Try to find a good "AI" voice (Google US English or similar)
-    const preferredVoice = voices.find(
-      (v) =>
-        v.name.includes("Google US English") || v.name.includes("Samantha"),
-    );
-    if (preferredVoice) speech.voice = preferredVoice;
-
-    speech.rate = 1.1; // Slightly faster
-    speech.pitch = 0.9; // Slightly deeper
-    window.speechSynthesis.speak(speech);
+      // Reset after success
+      setTimeout(() => setMode("IDLE"), 2000);
+    } catch (e) {
+      setMode("ERROR");
+      setResponse("CONNECTION FAILED.");
+    } finally {
+      setProcessing(false);
+      setTranscript("");
+    }
   };
 
   const toggleListen = () => {
@@ -77,7 +108,6 @@ export default function VoiceCommand() {
 
   return (
     <div className="fixed bottom-8 right-8 z-50 flex flex-col items-end gap-3">
-      {/* Holographic Text Bubble */}
       {(transcript || response) && (
         <div className="holo-panel p-4 max-w-xs text-right animate-in fade-in slide-in-from-right-10 border-r-4 border-r-nexus-accent">
           <p className="text-xs text-nexus-subtext font-mono uppercase tracking-widest mb-1">
@@ -93,7 +123,6 @@ export default function VoiceCommand() {
         </div>
       )}
 
-      {/* The Reactor Button */}
       <Button
         onClick={toggleListen}
         className={`rounded-full w-16 h-16 border-2 transition-all duration-300 shadow-[0_0_30px_rgba(0,0,0,0.5)] flex items-center justify-center relative overflow-hidden group ${
@@ -102,7 +131,6 @@ export default function VoiceCommand() {
             : "bg-nexus-accent/10 border-nexus-accent hover:bg-nexus-accent/20 hover:scale-105 hover:shadow-[0_0_30px_rgba(0,243,255,0.4)]"
         }`}
       >
-        {/* Animated Rings inside button */}
         <div
           className={`absolute inset-0 border border-current rounded-full opacity-30 ${listening ? "animate-ping" : "scale-75"}`}
         />

@@ -8,9 +8,11 @@ import {
 } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useSystemStore } from "@/lib/store";
 
 export default function HabitsModule() {
   const { session } = useAuth();
+  const { triggerPulse } = useSystemStore();
   const [habits, setHabits] = useState<any[]>([]);
   const [newHabit, setNewHabit] = useState("");
 
@@ -28,16 +30,24 @@ export default function HabitsModule() {
     if (!newHabit) return;
     await createHabit(newHabit, session.access_token);
     setNewHabit("");
+    triggerPulse("success");
     loadHabits();
   };
 
   const handleIncrement = async (id: string) => {
+    triggerPulse("success"); // Reinforce positive behavior
     await incrementHabit(id, session.access_token);
     loadHabits();
   };
 
+  const handleDelete = async (id: string) => {
+    triggerPulse("error");
+    await deleteHabit(id, session.access_token);
+    loadHabits();
+  };
+
   return (
-    <div className="flex flex-col h-full bg-nexus-panel/50 rounded-xl overflow-hidden">
+    <div className="flex flex-col h-full bg-nexus-panel/50 rounded-xl overflow-hidden transition-all hover:shadow-[0_0_20px_rgba(112,0,255,0.1)]">
       <div className="p-4 border-b border-nexus-border/30 bg-black/20">
         <h2 className="text-nexus-secondary font-bold tracking-widest text-sm uppercase">
           Protocols
@@ -76,10 +86,7 @@ export default function HabitsModule() {
                 +
               </Button>
               <button
-                onClick={async () => {
-                  await deleteHabit(h.id, session.access_token);
-                  loadHabits();
-                }}
+                onClick={() => handleDelete(h.id)}
                 className="text-nexus-subtext hover:text-nexus-danger ml-1"
               >
                 ×

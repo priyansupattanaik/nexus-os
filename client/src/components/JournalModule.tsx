@@ -2,9 +2,11 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth";
 import { fetchJournal, createEntry, deleteEntry } from "@/lib/api";
 import { Button } from "@/components/ui/button";
+import { useSystemStore } from "@/lib/store";
 
 export default function JournalModule() {
   const { session } = useAuth();
+  const { triggerPulse } = useSystemStore();
   const [entries, setEntries] = useState<any[]>([]);
   const [content, setContent] = useState("");
 
@@ -21,11 +23,18 @@ export default function JournalModule() {
     if (!content.trim()) return;
     await createEntry(content, session.access_token);
     setContent("");
+    triggerPulse("success");
+    loadData();
+  };
+
+  const handleDelete = async (id: string) => {
+    triggerPulse("error");
+    await deleteEntry(id, session.access_token);
     loadData();
   };
 
   return (
-    <div className="flex flex-col h-full bg-nexus-panel/50 rounded-xl overflow-hidden">
+    <div className="flex flex-col h-full bg-nexus-panel/50 rounded-xl overflow-hidden transition-all hover:shadow-[0_0_20px_rgba(255,255,255,0.05)]">
       <div className="p-4 border-b border-nexus-border/30 bg-black/20">
         <h2 className="text-white font-bold tracking-widest text-sm uppercase">
           System Logs
@@ -60,10 +69,7 @@ export default function JournalModule() {
                 {new Date(e.created_at).toLocaleString()}
               </span>
               <button
-                onClick={async () => {
-                  await deleteEntry(e.id, session.access_token);
-                  loadData();
-                }}
+                onClick={() => handleDelete(e.id)}
                 className="text-nexus-danger opacity-0 group-hover:opacity-100 transition-opacity text-[10px] font-bold"
               >
                 [PURGE]

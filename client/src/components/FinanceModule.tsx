@@ -7,9 +7,11 @@ import {
 } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useSystemStore } from "@/lib/store";
 
 export default function FinanceModule() {
   const { session } = useAuth();
+  const { triggerPulse } = useSystemStore();
   const [txns, setTxns] = useState<any[]>([]);
   const [desc, setDesc] = useState("");
   const [amount, setAmount] = useState("");
@@ -31,6 +33,7 @@ export default function FinanceModule() {
     );
     setDesc("");
     setAmount("");
+    triggerPulse("success"); // Money moves trigger the system
     loadData();
   };
 
@@ -39,8 +42,14 @@ export default function FinanceModule() {
     0,
   );
 
+  const handleDelete = async (id: string) => {
+    triggerPulse("error");
+    await deleteTransaction(id, session.access_token);
+    loadData();
+  };
+
   return (
-    <div className="flex flex-col h-full bg-nexus-panel/50 rounded-xl overflow-hidden">
+    <div className="flex flex-col h-full bg-nexus-panel/50 rounded-xl overflow-hidden transition-all hover:shadow-[0_0_20px_rgba(0,255,157,0.1)]">
       <div className="p-4 border-b border-nexus-border/30 bg-black/20 flex justify-between items-end">
         <h2 className="text-nexus-accent font-bold tracking-widest text-sm uppercase">
           Ledger
@@ -100,10 +109,7 @@ export default function FinanceModule() {
                 {t.type === "income" ? "+" : "-"}${t.amount}
               </span>
               <button
-                onClick={async () => {
-                  await deleteTransaction(t.id, session.access_token);
-                  loadData();
-                }}
+                onClick={() => handleDelete(t.id)}
                 className="text-nexus-subtext hover:text-white"
               >
                 ×
