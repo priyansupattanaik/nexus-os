@@ -39,21 +39,37 @@
 }
 
 @layer components {
+  /* HOLOGRAPHIC PANEL */
   .holo-panel {
-    @apply relative bg-black/40 border border-[var(--nexus-accent)]/30 rounded-xl backdrop-blur-sm overflow-hidden transition-all duration-300;
+    @apply relative bg-black/40 rounded-xl backdrop-blur-sm overflow-hidden transition-all duration-300;
+    /* Move dynamic border color here */
+    border: 1px solid rgba(0, 243, 255, 0.3); /* Fallback */
+    border-color: color-mix(in srgb, var(--nexus-accent) 30%, transparent);
     box-shadow:
       0 0 15px rgba(0, 0, 0, 0.5),
       inset 0 0 20px rgba(255, 255, 255, 0.02);
   }
 
+  /* HOLOGRAPHIC INPUT */
   .holo-input {
-    @apply bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white placeholder:text-gray-500 focus:outline-none focus:border-[var(--nexus-accent)]/80 focus:shadow-[0_0_10px_rgba(255,255,255,0.1)] transition-all font-mono;
+    @apply bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white placeholder:text-gray-500 focus:outline-none focus:shadow-[0_0_10px_rgba(255,255,255,0.1)] transition-all font-mono;
+  }
+  .holo-input:focus {
+    border-color: var(--nexus-accent);
   }
 
+  /* HOLOGRAPHIC BUTTON */
   .holo-button {
-    @apply bg-[var(--nexus-accent)]/10 hover:bg-[var(--nexus-accent)]/20 text-[var(--nexus-accent)] border border-[var(--nexus-accent)]/30 font-bold py-2 px-4 rounded-lg transition-all active:scale-95 uppercase tracking-wider text-xs shadow-[0_0_10px_rgba(0,0,0,0.2)];
+    @apply font-bold py-2 px-4 rounded-lg transition-all active:scale-95 uppercase tracking-wider text-xs shadow-[0_0_10px_rgba(0,0,0,0.2)];
+    background-color: color-mix(in srgb, var(--nexus-accent) 10%, transparent);
+    color: var(--nexus-accent);
+    border: 1px solid color-mix(in srgb, var(--nexus-accent) 30%, transparent);
+  }
+  .holo-button:hover {
+    background-color: color-mix(in srgb, var(--nexus-accent) 20%, transparent);
   }
 
+  /* Scrollbar */
   ::-webkit-scrollbar {
     width: 4px;
   }
