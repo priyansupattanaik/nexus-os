@@ -6,20 +6,23 @@ import { checkSystemStatus, getAIBriefing } from "@/lib/api";
 import VoiceCommand from "@/components/VoiceCommand";
 import FocusMode from "@/components/FocusMode";
 import OmniCommand from "@/components/OmniCommand";
+import SubspaceStream from "@/components/SubspaceStream"; // <<< NEW
 import { Button } from "@/components/ui/button";
 import { useSystemStore } from "@/lib/store";
 
-// Lazy Load All Modules
+// Modules
 const CoreScene = lazy(() => import("@/components/3d/CoreScene"));
 const TasksModule = lazy(() => import("@/components/TasksModule"));
 const HabitsModule = lazy(() => import("@/components/HabitsModule"));
 const FinanceModule = lazy(() => import("@/components/FinanceModule"));
 const JournalModule = lazy(() => import("@/components/JournalModule"));
 const MusicModule = lazy(() => import("@/components/MusicModule"));
-// Phase 2 Modules
 const BioRegulator = lazy(() => import("@/components/BioRegulator"));
 const Overclock = lazy(() => import("@/components/Overclock"));
 const FrequencyTuner = lazy(() => import("@/components/FrequencyTuner"));
+// Phase 3 Modules
+const DaemonPet = lazy(() => import("@/components/DaemonPet"));
+const DreamDecoder = lazy(() => import("@/components/DreamDecoder"));
 
 function Dashboard() {
   const { session } = useAuth();
@@ -46,10 +49,11 @@ function Dashboard() {
 
   return (
     <div
-      className={`min-h-screen relative flex flex-col font-sans selection:bg-[var(--nexus-accent)]/30 selection:text-black theme-${theme}`}
+      className={`min-h-screen relative flex flex-col font-sans selection:bg-[var(--nexus-accent)]/30 selection:text-black theme-${theme} pb-8`}
     >
       <OmniCommand />
       <VoiceCommand />
+      <SubspaceStream /> {/* <<< Footer Ticker */}
       {showProfile && (
         <ProfileModule
           user={session.user}
@@ -57,7 +61,6 @@ function Dashboard() {
         />
       )}
       {isFocusMode && <FocusMode />}
-
       {/* Header */}
       <header className="sticky top-0 z-50 px-6 py-3 flex justify-between items-center bg-black/80 backdrop-blur-md border-b border-[var(--nexus-accent)]/20 shadow-[0_5px_20px_rgba(0,0,0,0.5)]">
         <div className="flex items-center gap-3">
@@ -94,7 +97,6 @@ function Dashboard() {
           </button>
         </div>
       </header>
-
       {/* Main Grid */}
       <main className="flex-1 p-4 md:p-6 lg:p-8 max-w-[1800px] mx-auto w-full z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 lg:grid-rows-[450px_auto] gap-6">
@@ -136,10 +138,10 @@ function Dashboard() {
             </div>
           </Suspense>
 
-          {/* Right Stack: Utilities */}
+          {/* Right Stack */}
           <div className="col-span-1 grid grid-cols-2 gap-4 auto-rows-min">
             <div className="col-span-2">
-              <Suspense fallback={<div className="holo-panel min-h-[200px]" />}>
+              <Suspense fallback={<div className="holo-panel h-48" />}>
                 <MusicModule />
               </Suspense>
             </div>
@@ -160,29 +162,33 @@ function Dashboard() {
             </div>
           </div>
 
-          <Suspense
-            fallback={<div className="holo-panel min-h-[400px] bg-white/5" />}
-          >
+          {/* Middle Row */}
+          <Suspense fallback={<div className="holo-panel h-96 bg-white/5" />}>
             <div className="col-span-1 min-h-[400px]">
               <TasksModule />
             </div>
           </Suspense>
-          <Suspense
-            fallback={<div className="holo-panel min-h-[400px] bg-white/5" />}
-          >
+          <Suspense fallback={<div className="holo-panel h-96 bg-white/5" />}>
             <div className="col-span-1 min-h-[400px]">
               <HabitsModule />
             </div>
           </Suspense>
+
+          {/* Third Column Mixed */}
           <div className="col-span-1 flex flex-col gap-6">
-            <Suspense
-              fallback={<div className="holo-panel min-h-[200px] bg-white/5" />}
-            >
+            <Suspense fallback={<div className="holo-panel h-32 bg-white/5" />}>
+              <DaemonPet />
+            </Suspense>
+            <Suspense fallback={<div className="holo-panel h-64 bg-white/5" />}>
+              <DreamDecoder />
+            </Suspense>
+            <Suspense fallback={<div className="holo-panel h-32 bg-white/5" />}>
               <FinanceModule />
             </Suspense>
-            <Suspense
-              fallback={<div className="holo-panel min-h-[200px] bg-white/5" />}
-            >
+          </div>
+
+          <div className="col-span-1 md:col-span-2 min-h-[300px]">
+            <Suspense fallback={<div className="holo-panel h-64 bg-white/5" />}>
               <JournalModule />
             </Suspense>
           </div>
