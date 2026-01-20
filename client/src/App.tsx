@@ -5,10 +5,11 @@ import { useEffect, useState, Suspense, lazy } from "react";
 import { checkSystemStatus, getAIBriefing } from "@/lib/api";
 import VoiceCommand from "@/components/VoiceCommand";
 import FocusMode from "@/components/FocusMode";
-import OmniCommand from "@/components/OmniCommand"; // <<< NEW
+import OmniCommand from "@/components/OmniCommand";
 import { Button } from "@/components/ui/button";
 import { useSystemStore } from "@/lib/store";
 
+// Lazy Load Modules
 const CoreScene = lazy(() => import("@/components/3d/CoreScene"));
 const TasksModule = lazy(() => import("@/components/TasksModule"));
 const HabitsModule = lazy(() => import("@/components/HabitsModule"));
@@ -18,7 +19,7 @@ const MusicModule = lazy(() => import("@/components/MusicModule"));
 
 function Dashboard() {
   const { session } = useAuth();
-  const { isFocusMode, setFocusMode, theme } = useSystemStore(); // <<< Get Theme
+  const { isFocusMode, setFocusMode, theme } = useSystemStore();
   const [status, setStatus] = useState("INITIALIZING...");
   const [briefing, setBriefing] = useState("");
   const [showProfile, setShowProfile] = useState(false);
@@ -40,11 +41,10 @@ function Dashboard() {
   };
 
   return (
-    // <<< Apply Dynamic Theme Class >>>
     <div
       className={`min-h-screen relative flex flex-col font-sans selection:bg-[var(--nexus-accent)]/30 selection:text-black theme-${theme}`}
     >
-      <OmniCommand /> {/* <<< Global Shortcut */}
+      <OmniCommand />
       <VoiceCommand />
       {showProfile && (
         <ProfileModule
@@ -53,6 +53,8 @@ function Dashboard() {
         />
       )}
       {isFocusMode && <FocusMode />}
+
+      {/* Header */}
       <header className="sticky top-0 z-50 px-6 py-3 flex justify-between items-center bg-black/80 backdrop-blur-md border-b border-[var(--nexus-accent)]/20 shadow-[0_5px_20px_rgba(0,0,0,0.5)]">
         <div className="flex items-center gap-3">
           <div className="w-2 h-2 rounded-full bg-[var(--nexus-accent)] animate-pulse shadow-[0_0_10px_currentColor]" />
@@ -88,6 +90,8 @@ function Dashboard() {
           </button>
         </div>
       </header>
+
+      {/* Main Grid */}
       <main className="flex-1 p-4 md:p-6 lg:p-8 max-w-[1800px] mx-auto w-full z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 lg:grid-rows-[450px_auto] gap-6">
           <Suspense
@@ -165,5 +169,34 @@ function Dashboard() {
         </div>
       </main>
     </div>
+  );
+}
+
+function LoadingScreen() {
+  return (
+    <div className="min-h-screen bg-black flex flex-col items-center justify-center relative overflow-hidden">
+      <div className="absolute inset-0 bg-[var(--nexus-accent)] opacity-10" />
+      <div className="relative z-10 flex flex-col items-center gap-6">
+        <div className="w-16 h-16 border-t-2 border-[var(--nexus-accent)] rounded-full animate-spin shadow-[0_0_20px_currentColor]" />
+        <div className="text-white font-mono text-xs tracking-[0.3em] animate-pulse">
+          SYSTEM INITIALIZING...
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AppContent() {
+  const { session, loading } = useAuth();
+  if (loading) return <LoadingScreen />;
+  return session ? <Dashboard /> : <Login />;
+}
+
+// Ensure this default export exists!
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }
