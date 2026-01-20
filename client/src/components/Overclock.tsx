@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { useSystemStore } from "@/lib/store";
-import { Button } from "@/components/ui/button";
+import { GlassCard } from "@/components/ui/GlassCard";
+import { Timer, Play, Square } from "lucide-react";
 
 export default function Overclock() {
   const { isOverclockActive, setOverclockActive, setOverclockProgress } =
     useSystemStore();
-  const [duration, setDuration] = useState(25); // Minutes
+  const [duration, setDuration] = useState(25);
   const [timeLeft, setTimeLeft] = useState(25 * 60);
 
   useEffect(() => {
@@ -14,19 +15,13 @@ export default function Overclock() {
       interval = setInterval(() => {
         setTimeLeft((prev) => {
           const val = prev - 1;
-          // Update global progress (0 to 1) for Core Color
-          const total = duration * 60;
-          setOverclockProgress(1 - val / total);
+          setOverclockProgress(1 - val / (duration * 60));
           return val;
         });
       }, 1000);
     } else if (timeLeft === 0) {
       setOverclockActive(false);
       setOverclockProgress(0);
-      // Play Alarm
-      new Audio(
-        "https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg",
-      ).play();
     }
     return () => clearInterval(interval);
   }, [isOverclockActive, timeLeft, duration]);
@@ -49,12 +44,9 @@ export default function Overclock() {
   };
 
   return (
-    <div className="holo-panel flex flex-col p-4 min-h-[160px]">
-      <div className="flex justify-between items-center mb-2">
-        <h2 className="text-[var(--nexus-accent)] font-bold tracking-widest text-[10px] uppercase">
-          Overclock
-        </h2>
-        <div className="flex gap-1">
+    <GlassCard title="Overclock" icon={<Timer />}>
+      <div className="flex flex-col h-full p-4 items-center justify-between">
+        <div className="flex gap-1 mb-2">
           {[15, 25, 45].map((m) => (
             <button
               key={m}
@@ -62,28 +54,31 @@ export default function Overclock() {
                 setDuration(m);
                 setTimeLeft(m * 60);
               }}
-              className={`text-[8px] px-1 border ${duration === m ? "border-white text-white" : "border-gray-700 text-gray-500"}`}
+              className={`text-[10px] px-2 py-1 border rounded transition-colors ${duration === m ? "border-white text-white" : "border-white/10 text-gray-500 hover:border-white/30"}`}
             >
               {m}m
             </button>
           ))}
         </div>
-      </div>
 
-      <div className="flex-1 flex items-center justify-center">
-        <span
-          className={`text-4xl font-mono font-bold ${isOverclockActive ? (timeLeft < 60 ? "text-red-500 animate-ping" : "text-white") : "text-gray-600"}`}
+        <div
+          className={`text-4xl font-mono font-bold ${isOverclockActive ? (timeLeft < 60 ? "text-red-500 animate-ping" : "text-white") : "text-slate-600"}`}
         >
           {formatTime(timeLeft)}
-        </span>
-      </div>
+        </div>
 
-      <Button
-        onClick={toggleTimer}
-        className={`w-full h-8 text-[10px] uppercase ${isOverclockActive ? "bg-red-500/10 text-red-500 border-red-500" : "holo-button"}`}
-      >
-        {isOverclockActive ? "Abort Cycle" : "Engage"}
-      </Button>
-    </div>
+        <button
+          onClick={toggleTimer}
+          className={`tech-button w-full mt-2 ${isOverclockActive ? "border-red-500/50 text-red-500 hover:bg-red-500/10" : ""}`}
+        >
+          {isOverclockActive ? (
+            <Square className="w-3 h-3" />
+          ) : (
+            <Play className="w-3 h-3" />
+          )}
+          {isOverclockActive ? "ABORT" : "ENGAGE"}
+        </button>
+      </div>
+    </GlassCard>
   );
 }

@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect } from "react";
-import { Button } from "@/components/ui/button";
+import { GlassCard } from "@/components/ui/GlassCard";
+import { Radio, StopCircle, PlayCircle } from "lucide-react";
 
 const PRESETS = [
-  { name: "FOCUS", base: 400, beat: 40 }, // Gamma
-  { name: "RELAX", base: 200, beat: 10 }, // Alpha
-  { name: "SLEEP", base: 100, beat: 4 }, // Theta
+  { name: "FOCUS", base: 400, beat: 40 },
+  { name: "RELAX", base: 200, beat: 10 },
+  { name: "SLEEP", base: 100, beat: 4 },
 ];
 
 export default function FrequencyTuner() {
@@ -23,30 +24,23 @@ export default function FrequencyTuner() {
   const play = (preset: (typeof PRESETS)[0]) => {
     stop();
     setActivePreset(preset.name);
-
     const ctx = new (
       window.AudioContext || (window as any).webkitAudioContext
     )();
     audioCtxRef.current = ctx;
-
     const gain = ctx.createGain();
-    gain.gain.value = 0.1; // Low volume
+    gain.gain.value = 0.1;
     gain.connect(ctx.destination);
-
-    // Left Ear
     const oscL = ctx.createOscillator();
     oscL.frequency.value = preset.base;
     const panL = ctx.createStereoPanner();
     panL.pan.value = -1;
-    oscL.connect(panL).connect(gain);
-
-    // Right Ear
     const oscR = ctx.createOscillator();
     oscR.frequency.value = preset.base + preset.beat;
     const panR = ctx.createStereoPanner();
     panR.pan.value = 1;
+    oscL.connect(panL).connect(gain);
     oscR.connect(panR).connect(gain);
-
     oscL.start();
     oscR.start();
     oscillatorsRef.current = [oscL, oscR];
@@ -57,22 +51,23 @@ export default function FrequencyTuner() {
   }, []);
 
   return (
-    <div className="holo-panel flex flex-col p-4 min-h-[160px]">
-      <h2 className="text-white font-bold tracking-widest text-[10px] uppercase mb-4">
-        Neural Tuner
-      </h2>
-
-      <div className="flex-1 grid grid-cols-1 gap-2">
+    <GlassCard title="Neural Tuner" icon={<Radio />}>
+      <div className="flex flex-col h-full p-4 gap-2">
         {PRESETS.map((p) => (
           <button
             key={p.name}
             onClick={() => (activePreset === p.name ? stop() : play(p))}
-            className={`text-[10px] border rounded py-1 transition-all ${activePreset === p.name ? "bg-[var(--nexus-accent)] text-black border-[var(--nexus-accent)]" : "border-white/10 text-gray-400 hover:border-white/30"}`}
+            className={`flex items-center justify-between text-[10px] border rounded p-2 transition-all ${activePreset === p.name ? "bg-[hsl(var(--primary))] text-black border-[hsl(var(--primary))]" : "border-white/10 text-slate-400 hover:border-white/30 hover:bg-white/5"}`}
           >
-            {p.name} <span className="opacity-50 text-[8px]">({p.beat}Hz)</span>
+            <span>{p.name}</span>
+            {activePreset === p.name ? (
+              <StopCircle className="w-3 h-3" />
+            ) : (
+              <PlayCircle className="w-3 h-3" />
+            )}
           </button>
         ))}
       </div>
-    </div>
+    </GlassCard>
   );
 }

@@ -3,36 +3,26 @@ import { Button } from "@/components/ui/button";
 import { sendVoiceCommand } from "@/lib/api";
 import { useSystemStore } from "@/lib/store";
 import { useAuth } from "@/lib/auth";
+import { Mic, MicOff, Activity } from "lucide-react";
 
 export default function VoiceCommand() {
   const { session } = useAuth();
   const { setMode } = useSystemStore();
-
-  // UI State
   const [isListening, setIsListening] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [statusText, setStatusText] = useState("OFFLINE");
   const [displayText, setDisplayText] = useState("");
-
-  // Logic Refs (These persist without re-rendering)
   const recognitionRef = useRef<any>(null);
-  const isActiveRef = useRef(false); // Master Switch
-  const isWakeWordRef = useRef(false); // Did we hear "Hey Nexus"?
+  const isActiveRef = useRef(false);
+  const isWakeWordRef = useRef(false);
   const silenceTimer = useRef<any>(null);
 
   useEffect(() => {
-    // Initialize Speech Engine ONCE
     const SpeechRecognition =
       (window as any).SpeechRecognition ||
       (window as any).webkitSpeechRecognition;
-
-    if (!SpeechRecognition) {
-      setDisplayText("VOICE NOT SUPPORTED");
-      return;
-    }
-
+    if (!SpeechRecognition) return;
     const recognition = new SpeechRecognition();
-    recognition.continuous = false; // We handle the loop manually for better stability
+    recognition.continuous = false;
     recognition.interimResults = true;
     recognition.lang = "en-US";
 
@@ -40,172 +30,115 @@ export default function VoiceCommand() {
       setIsListening(true);
       if (isWakeWordRef.current) setMode("LISTENING");
     };
-
     recognition.onresult = (event: any) => {
-      // Clear silence timer if user is talking
       if (silenceTimer.current) clearTimeout(silenceTimer.current);
-
-      const current = event.resultIndex;
-      const transcript = event.results[current][0].transcript.toLowerCase();
+      const transcript =
+        event.results[event.resultIndex][0].transcript.toLowerCase();
       setDisplayText(transcript);
-
-      // Phase 1: Waiting for Wake Word
-      if (!isWakeWordRef.current) {
-        if (transcript.includes("hey nexus") || transcript.includes("nexus")) {
-          // WAKE UP!
-          isWakeWordRef.current = true;
-          setMode("LISTENING");
-          setStatusText("LISTENING...");
-
-          // Audio Feedback
-          const audio = new Audio(
-            "https://actions.google.com/sounds/v1/science_fiction/scifi_hightech_beep.ogg",
-          );
-          audio.volume = 0.5;
-          audio.play().catch(() => {});
-        }
+      if (
+        !isWakeWordRef.current &&
+        (transcript.includes("hey nexus") || transcript.includes("nexus"))
+      ) {
+        isWakeWordRef.current = true;
+        setMode("LISTENING");
+        new Audio(
+          "https://actions.google.com/sounds/v1/science_fiction/scifi_hightech_beep.ogg",
+        )
+          .play()
+          .catch(() => {});
       }
     };
-
     recognition.onend = () => {
       setIsListening(false);
-
-      // If the loop is supposed to be active, restart it instantly
-      if (isActiveRef.current) {
-        // If we heard the wake word recently, check if we have a command
-        if (isWakeWordRef.current && !isProcessing) {
-          // Use a small delay to grab the final transcript state is tricky in refs,
-          // so we rely on the logic that continuous processing happens elsewhere.
-          // If we ended and are processing, do nothing.
-          // If we ended and simply stopped speaking:
-          // Check if we need to process a command
-          // (Logic moved to silence timer for better flow)
-        }
-
-        // INSTANT RESTART (The "Infinite Loop")
+      if (isActiveRef.current)
         try {
           recognition.start();
         } catch {}
-      } else {
-        setMode("IDLE");
-        setStatusText("OFFLINE");
-      }
+      else setMode("IDLE");
     };
-
     recognitionRef.current = recognition;
-
-    // Cleanup
     return () => {
       isActiveRef.current = false;
       recognition.stop();
     };
-  }, []); // Dependency Array is EMPTY to prevent reloading
+  }, []);
 
-  // Handling the Command Logic via Effect to access latest State
   useEffect(() => {
     if (isWakeWordRef.current && displayText && !isProcessing) {
-      // Debounce: Wait 1.5s of silence before sending command
       if (silenceTimer.current) clearTimeout(silenceTimer.current);
-
       silenceTimer.current = setTimeout(() => {
         const cleanCommand = displayText
           .replace("hey nexus", "")
           .replace("nexus", "")
           .trim();
-        if (cleanCommand.length > 3) {
-          executeCommand(cleanCommand);
-        }
-      }, 1500); // Wait 1.5 seconds after user stops talking
+        if (cleanCommand.length > 3) executeCommand(cleanCommand);
+      }, 1500);
     }
   }, [displayText]);
 
   const toggleSystem = () => {
     if (isActiveRef.current) {
-      // Turn OFF
       isActiveRef.current = false;
       isWakeWordRef.current = false;
       recognitionRef.current?.stop();
-      setStatusText("OFFLINE");
       setDisplayText("");
       setMode("IDLE");
     } else {
-      // Turn ON
       isActiveRef.current = true;
       recognitionRef.current?.start();
-      setStatusText("STANDBY - SAY 'HEY NEXUS'");
     }
-  };
-
-  const speak = (text: string) => {
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    // Attempt to find a better voice
-    const voices = window.speechSynthesis.getVoices();
-    const aiVoice = voices.find(
-      (v) =>
-        v.name.includes("Google US English") || v.name.includes("Samantha"),
-    );
-    if (aiVoice) utterance.voice = aiVoice;
-    utterance.rate = 1.1;
-    utterance.pitch = 1.0;
-    window.speechSynthesis.speak(utterance);
   };
 
   const executeCommand = async (cmd: string) => {
     setIsProcessing(true);
     setMode("PROCESSING");
-    setStatusText("ANALYZING...");
-
-    // Reset wake word so we don't loop
     isWakeWordRef.current = false;
-
     try {
       const data = await sendVoiceCommand(cmd, session?.access_token || "");
       setDisplayText(data.response);
-      speak(data.response);
+      const utterance = new SpeechSynthesisUtterance(data.response);
+      window.speechSynthesis.speak(utterance);
       setMode("SUCCESS");
-    } catch (e) {
-      setDisplayText("CONNECTION ERROR");
+    } catch {
+      setDisplayText("ERROR");
       setMode("ERROR");
     } finally {
       setIsProcessing(false);
-      setStatusText("STANDBY");
-      // Loop continues automatically via onend -> start
     }
   };
 
   return (
     <div className="fixed bottom-8 right-8 z-50 flex flex-col items-end gap-3">
-      {/* Holographic Feedback Panel */}
       {isActiveRef.current && (
-        <div
-          className={`holo-panel p-4 max-w-xs text-right animate-in fade-in slide-in-from-right-10 border-r-4 ${isWakeWordRef.current ? "border-r-nexus-accent" : "border-r-gray-600"}`}
-        >
-          <p className="text-xs text-nexus-subtext font-mono uppercase tracking-widest mb-1">
-            {statusText}
+        <div className="glass-panel p-4 max-w-xs text-right animate-in fade-in slide-in-from-right-10 border-r-4 border-[hsl(var(--primary))]">
+          <p className="text-[10px] text-slate-400 font-mono uppercase tracking-widest mb-1 flex items-center justify-end gap-2">
+            {isListening ? (
+              <Activity className="w-3 h-3 animate-pulse text-green-500" />
+            ) : (
+              "OFFLINE"
+            )}
+            {isWakeWordRef.current ? "LISTENING" : "STANDBY"}
           </p>
-          <p className="text-nexus-text font-medium text-sm leading-relaxed min-h-[20px]">
+          <p className="text-white font-medium text-sm leading-relaxed">
             {displayText}
           </p>
         </div>
       )}
 
-      {/* The Reactor Button */}
       <Button
         onClick={toggleSystem}
-        className={`rounded-full w-16 h-16 border-2 transition-all duration-300 shadow-[0_0_30px_rgba(0,0,0,0.5)] flex items-center justify-center relative overflow-hidden group ${
-          isActiveRef.current
-            ? isWakeWordRef.current
-              ? "bg-red-500/20 border-red-500 animate-pulse shadow-[0_0_50px_rgba(255,0,0,0.4)]"
-              : "bg-nexus-accent/10 border-nexus-accent"
-            : "bg-white/5 border-white/20 hover:border-nexus-accent"
-        }`}
+        className={`rounded-full w-14 h-14 border transition-all duration-300 shadow-2xl flex items-center justify-center relative overflow-hidden group ${isActiveRef.current ? "bg-[hsl(var(--primary))/0.2] border-[hsl(var(--primary))]" : "bg-black/80 border-white/20 hover:border-[hsl(var(--primary))]"}`}
       >
-        <div
-          className={`absolute inset-0 border border-current rounded-full opacity-30 ${isWakeWordRef.current ? "animate-ping" : ""}`}
-        />
-        <span className="relative z-10 text-2xl">
-          {isActiveRef.current ? (isWakeWordRef.current ? "●" : "👂") : "🔇"}
+        <span className="relative z-10 text-white">
+          {isActiveRef.current ? (
+            isWakeWordRef.current ? (
+              <Activity className="w-6 h-6 animate-pulse" />
+            ) : (
+              <Mic className="w-6 h-6" />
+            )
+          ) : (
+            <MicOff className="w-6 h-6 text-slate-500" />
+          )}
         </span>
       </Button>
     </div>
