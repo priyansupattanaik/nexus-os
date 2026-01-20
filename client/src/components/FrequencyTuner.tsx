@@ -3,9 +3,9 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { Radio, StopCircle, PlayCircle } from "lucide-react";
 
 const PRESETS = [
-  { name: "FOCUS", base: 400, beat: 40 },
-  { name: "RELAX", base: 200, beat: 10 },
-  { name: "SLEEP", base: 100, beat: 4 },
+  { name: "Deep Focus", base: 400, beat: 40, color: "blue" },
+  { name: "Relaxation", base: 200, beat: 10, color: "emerald" },
+  { name: "Deep Sleep", base: 100, beat: 4, color: "violet" },
 ];
 
 export default function FrequencyTuner() {
@@ -51,19 +51,21 @@ export default function FrequencyTuner() {
   }, []);
 
   return (
-    <GlassCard title="Neural Tuner" icon={<Radio />}>
-      <div className="flex flex-col h-full p-4 gap-2">
+    <GlassCard title="Binaural Tuner" icon={<Radio />}>
+      <div className="flex flex-col h-full p-5 gap-3">
         {PRESETS.map((p) => (
           <button
             key={p.name}
             onClick={() => (activePreset === p.name ? stop() : play(p))}
-            className={`flex items-center justify-between text-[10px] border rounded p-2 transition-all ${activePreset === p.name ? "bg-[hsl(var(--primary))] text-black border-[hsl(var(--primary))]" : "border-white/10 text-slate-400 hover:border-white/30 hover:bg-white/5"}`}
+            className={`flex items-center justify-between w-full px-4 py-3 rounded-xl border transition-all duration-300 group ${activePreset === p.name ? "bg-white text-black border-white shadow-lg shadow-white/10" : "bg-white/5 border-white/5 text-slate-400 hover:bg-white/10 hover:text-white"}`}
           >
-            <span>{p.name}</span>
+            <span className="text-xs font-bold uppercase tracking-wide">
+              {p.name}
+            </span>
             {activePreset === p.name ? (
-              <StopCircle className="w-3 h-3" />
+              <StopCircle className="w-4 h-4 text-red-500" />
             ) : (
-              <PlayCircle className="w-3 h-3" />
+              <PlayCircle className="w-4 h-4 opacity-50 group-hover:opacity-100" />
             )}
           </button>
         ))}

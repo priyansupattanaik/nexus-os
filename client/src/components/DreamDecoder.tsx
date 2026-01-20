@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { sendVoiceCommand } from "@/lib/api";
 import { GlassCard } from "@/components/ui/GlassCard";
-import { BrainCircuit, Send, Loader2 } from "lucide-react";
+import { BrainCircuit, Send, Loader2, Sparkles } from "lucide-react";
 
 export default function DreamDecoder() {
   const { session } = useAuth();
@@ -13,13 +13,13 @@ export default function DreamDecoder() {
   const handleDecode = async () => {
     if (!input.trim()) return;
     setLoading(true);
-    setAnalysis("DECRYPTING NEURAL PATTERNS...");
+    setAnalysis("Establishing neural link...");
     try {
-      const prompt = `Analyze this dream or abstract idea and provide a cryptic, cyberpunk-style interpretation: "${input}"`;
+      const prompt = `Analyze this dream or thought pattern and provide a deep, psychological or strategic insight: "${input}"`;
       const res = await sendVoiceCommand(prompt, session.access_token);
       setAnalysis(res.response);
     } catch (e) {
-      setAnalysis("ERROR: NEURAL LINK FAILED");
+      setAnalysis("Connection interrupted.");
     } finally {
       setLoading(false);
     }
@@ -27,17 +27,19 @@ export default function DreamDecoder() {
 
   return (
     <GlassCard title="Dream Decoder" icon={<BrainCircuit />}>
-      <div className="flex flex-col h-full p-4 gap-3">
+      <div className="flex flex-col h-full p-5 gap-4">
         <textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Input raw data stream..."
-          className="tech-input flex-1 resize-none min-h-[80px]"
+          placeholder="Input dream sequence or abstract thought..."
+          className="os-input flex-1 min-h-[100px] resize-none leading-relaxed"
         />
 
         {analysis && (
-          <div className="p-3 bg-[hsl(var(--secondary)/0.1)] border border-[hsl(var(--secondary)/0.3)] rounded text-xs font-mono text-slate-300 max-h-[120px] overflow-y-auto custom-scrollbar">
-            <span className="text-[hsl(var(--secondary))] mr-2">{">>"}</span>
+          <div className="p-4 bg-black/30 border border-white/10 rounded-xl text-xs font-mono text-blue-200 leading-relaxed shadow-inner max-h-[150px] overflow-y-auto">
+            <div className="flex items-center gap-2 mb-2 text-violet-400 font-bold uppercase tracking-wider text-[10px]">
+              <Sparkles className="w-3 h-3" /> Analysis
+            </div>
             {analysis}
           </div>
         )}
@@ -45,14 +47,14 @@ export default function DreamDecoder() {
         <button
           onClick={handleDecode}
           disabled={loading}
-          className="tech-button w-full border-[hsl(var(--secondary))] text-[hsl(var(--secondary))] hover:bg-[hsl(var(--secondary)/0.1)]"
+          className="os-btn os-btn-primary w-full"
         >
           {loading ? (
-            <Loader2 className="w-3 h-3 animate-spin" />
+            <Loader2 className="w-4 h-4 animate-spin" />
           ) : (
-            <div className="flex items-center gap-2">
-              <Send className="w-3 h-3" /> DECODE
-            </div>
+            <>
+              <Send className="w-4 h-4" /> Decode Pattern
+            </>
           )}
         </button>
       </div>

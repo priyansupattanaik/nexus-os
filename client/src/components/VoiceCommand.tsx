@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from "react";
-import { Button } from "@/components/ui/button";
 import { sendVoiceCommand } from "@/lib/api";
 import { useSystemStore } from "@/lib/store";
 import { useAuth } from "@/lib/auth";
@@ -9,7 +8,6 @@ export default function VoiceCommand() {
   const { session } = useAuth();
   const { setMode } = useSystemStore();
   const [isListening, setIsListening] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
   const [displayText, setDisplayText] = useState("");
   const recognitionRef = useRef<any>(null);
   const isActiveRef = useRef(false);
@@ -64,7 +62,7 @@ export default function VoiceCommand() {
   }, []);
 
   useEffect(() => {
-    if (isWakeWordRef.current && displayText && !isProcessing) {
+    if (isWakeWordRef.current && displayText) {
       if (silenceTimer.current) clearTimeout(silenceTimer.current);
       silenceTimer.current = setTimeout(() => {
         const cleanCommand = displayText
@@ -90,7 +88,6 @@ export default function VoiceCommand() {
   };
 
   const executeCommand = async (cmd: string) => {
-    setIsProcessing(true);
     setMode("PROCESSING");
     isWakeWordRef.current = false;
     try {
@@ -102,22 +99,18 @@ export default function VoiceCommand() {
     } catch {
       setDisplayText("ERROR");
       setMode("ERROR");
-    } finally {
-      setIsProcessing(false);
     }
   };
 
   return (
-    <div className="fixed bottom-8 right-8 z-50 flex flex-col items-end gap-3">
+    <div className="fixed bottom-8 right-8 z-[100] flex flex-col items-end gap-4">
       {isActiveRef.current && (
-        <div className="glass-panel p-4 max-w-xs text-right animate-in fade-in slide-in-from-right-10 border-r-4 border-[hsl(var(--primary))]">
-          <p className="text-[10px] text-slate-400 font-mono uppercase tracking-widest mb-1 flex items-center justify-end gap-2">
-            {isListening ? (
-              <Activity className="w-3 h-3 animate-pulse text-green-500" />
-            ) : (
-              "OFFLINE"
-            )}
+        <div className="bg-black/60 backdrop-blur-xl border border-white/10 p-4 rounded-2xl max-w-xs text-right animate-in fade-in slide-in-from-right-10 shadow-2xl">
+          <p className="text-[10px] text-blue-400 font-bold uppercase tracking-widest mb-1 flex items-center justify-end gap-2">
             {isWakeWordRef.current ? "LISTENING" : "STANDBY"}
+            <span
+              className={`w-2 h-2 rounded-full ${isListening ? "bg-green-500 animate-pulse" : "bg-slate-500"}`}
+            />
           </p>
           <p className="text-white font-medium text-sm leading-relaxed">
             {displayText}
@@ -125,22 +118,20 @@ export default function VoiceCommand() {
         </div>
       )}
 
-      <Button
+      <button
         onClick={toggleSystem}
-        className={`rounded-full w-14 h-14 border transition-all duration-300 shadow-2xl flex items-center justify-center relative overflow-hidden group ${isActiveRef.current ? "bg-[hsl(var(--primary))/0.2] border-[hsl(var(--primary))]" : "bg-black/80 border-white/20 hover:border-[hsl(var(--primary))]"}`}
+        className={`w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300 shadow-2xl backdrop-blur-md border ${isActiveRef.current ? "bg-blue-500 text-white border-blue-400 scale-110 shadow-blue-500/30" : "bg-white/10 text-slate-300 border-white/20 hover:bg-white/20"}`}
       >
-        <span className="relative z-10 text-white">
-          {isActiveRef.current ? (
-            isWakeWordRef.current ? (
-              <Activity className="w-6 h-6 animate-pulse" />
-            ) : (
-              <Mic className="w-6 h-6" />
-            )
+        {isActiveRef.current ? (
+          isWakeWordRef.current ? (
+            <Activity className="w-8 h-8 animate-pulse" />
           ) : (
-            <MicOff className="w-6 h-6 text-slate-500" />
-          )}
-        </span>
-      </Button>
+            <Mic className="w-7 h-7" />
+          )
+        ) : (
+          <MicOff className="w-6 h-6" />
+        )}
+      </button>
     </div>
   );
 }

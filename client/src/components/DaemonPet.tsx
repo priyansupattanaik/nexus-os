@@ -2,25 +2,17 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { fetchTasks } from "@/lib/api";
 import { GlassCard } from "@/components/ui/GlassCard";
-import { Bot, Zap, Battery, Activity } from "lucide-react";
-
-const STATES = {
-  IDLE: "( ^_^)db",
-  HAPPY: "( ◕‿◕ )",
-  ANXIOUS: "( ◎_◎;)",
-  SLEEP: "( -_-)zzZ",
-};
+import { Bot, Zap, Battery, Activity, Smile, Frown, Moon } from "lucide-react";
 
 export default function DaemonPet() {
   const { session } = useAuth();
-  const [mood, setMood] = useState(STATES.IDLE);
+  const [mood, setMood] = useState("IDLE");
   const [message, setMessage] = useState("System Normal");
   const [battery, setBattery] = useState(100);
 
   useEffect(() => {
     if (!session) return;
     const interval = setInterval(() => {
-      // Mock Battery Drain based on time
       setBattery((prev) => Math.max(0, prev - 0.5));
     }, 5000);
     return () => clearInterval(interval);
@@ -35,19 +27,19 @@ export default function DaemonPet() {
         const done = tasks.filter((t: any) => t.status === "done").length;
 
         if (pending > 5) {
-          setMood(STATES.ANXIOUS);
-          setMessage("Overload");
+          setMood("ANXIOUS");
+          setMessage("Overload Detected");
         } else if (done > 0 && Math.random() > 0.5) {
-          setMood(STATES.HAPPY);
-          setMessage("Optimal");
+          setMood("HAPPY");
+          setMessage("Optimal Efficiency");
         } else {
           const hour = new Date().getHours();
           if (hour > 22 || hour < 6) {
-            setMood(STATES.SLEEP);
-            setMessage("Recharging");
+            setMood("SLEEP");
+            setMessage("Recharging...");
           } else {
-            setMood(STATES.IDLE);
-            setMessage("Standby");
+            setMood("IDLE");
+            setMessage("Standing By");
           }
         }
       } catch (e) {}
@@ -57,23 +49,37 @@ export default function DaemonPet() {
     return () => clearInterval(statusInterval);
   }, [session]);
 
-  return (
-    <GlassCard title="Daemon.v1" icon={<Bot />}>
-      <div className="flex flex-col items-center justify-center h-full p-4 relative overflow-hidden">
-        {/* Background Pulse */}
-        <div className="absolute inset-0 bg-[hsl(var(--primary)/0.05)] animate-pulse" />
+  const getIcon = () => {
+    switch (mood) {
+      case "HAPPY":
+        return <Smile className="w-12 h-12 text-emerald-400 animate-bounce" />;
+      case "ANXIOUS":
+        return <Frown className="w-12 h-12 text-rose-400 animate-pulse" />;
+      case "SLEEP":
+        return <Moon className="w-12 h-12 text-violet-400 opacity-50" />;
+      default:
+        return <Bot className="w-12 h-12 text-blue-400" />;
+    }
+  };
 
-        <div className="text-4xl font-mono text-[hsl(var(--primary))] mb-4 animate-bounce z-10 filter drop-shadow-[0_0_10px_hsl(var(--primary))]">
-          {mood}
+  return (
+    <GlassCard title="Daemon" icon={<Zap />}>
+      <div className="flex flex-col items-center justify-center h-full p-4 relative overflow-hidden">
+        <div className="absolute inset-0 bg-blue-500/5 animate-pulse" />
+
+        <div className="z-10 mb-3 filter drop-shadow-[0_0_15px_rgba(59,130,246,0.5)] transition-all duration-500">
+          {getIcon()}
         </div>
 
-        <div className="w-full flex justify-between text-[10px] font-mono text-slate-400 z-10 px-2">
-          <div className="flex items-center gap-1">
-            <Activity className="w-3 h-3" />
+        <div className="w-full flex justify-between items-center px-3 py-2 rounded-xl bg-black/20 border border-white/5 backdrop-blur-md z-10">
+          <div className="flex items-center gap-2 text-[10px] text-slate-300 font-bold uppercase tracking-wider">
+            <Activity className="w-3 h-3 text-blue-400" />
             <span>{message}</span>
           </div>
-          <div className="flex items-center gap-1">
-            <Battery className="w-3 h-3" />
+          <div className="flex items-center gap-2 text-[10px] text-slate-400 font-mono">
+            <Battery
+              className={`w-3 h-3 ${battery < 20 ? "text-red-500" : "text-emerald-500"}`}
+            />
             <span>{battery.toFixed(0)}%</span>
           </div>
         </div>

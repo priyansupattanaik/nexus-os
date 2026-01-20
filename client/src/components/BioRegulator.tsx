@@ -24,37 +24,45 @@ export default function BioRegulator() {
 
   return (
     <GlassCard title="Bio-Sync" icon={<HeartPulse />}>
-      <div className="flex flex-col h-full p-4 items-center justify-center relative overflow-hidden">
-        {isBioActive && (
-          <div
-            className={`absolute inset-0 opacity-20 transition-colors duration-1000 ${phase === "INHALE" ? "bg-blue-500" : phase === "HOLD" ? "bg-purple-500" : "bg-green-500"}`}
-          />
-        )}
+      <div className="flex flex-col h-full p-5 items-center justify-center relative overflow-hidden">
+        {/* Breathing Circle */}
+        <div
+          className={`absolute w-32 h-32 rounded-full border-2 transition-all duration-[4000ms] ease-in-out ${
+            isBioActive
+              ? phase === "INHALE"
+                ? "scale-150 border-blue-400/50 bg-blue-400/10"
+                : phase === "HOLD"
+                  ? "scale-150 border-violet-400/50 bg-violet-400/10"
+                  : "scale-75 border-emerald-400/50 bg-emerald-400/10"
+              : "scale-100 border-white/5 opacity-50"
+          }`}
+        />
 
-        <div className="z-10 text-center mb-4">
+        <div className="z-10 text-center mb-6">
           {isBioActive ? (
             <>
-              <div className="text-2xl font-bold text-white tracking-widest animate-pulse">
+              <div className="text-2xl font-bold text-white tracking-widest drop-shadow-lg">
                 {phase}
               </div>
-              <div className="text-[10px] text-slate-400 mt-1">
-                SYNC WITH CORE
+              <div className="text-[10px] text-slate-400 mt-1 uppercase tracking-widest">
+                Follow the rhythm
               </div>
             </>
           ) : (
-            <div className="text-xs text-slate-500">
-              STRESS DETECTED?
+            <div className="text-xs font-medium text-slate-500">
+              System stress detected?
               <br />
-              INITIATE PROTOCOL.
+              Initiate calming protocol.
             </div>
           )}
         </div>
 
         <button
           onClick={() => setBioActive(!isBioActive)}
-          className={`tech-button w-full z-10 ${isBioActive ? "border-red-500/50 text-red-500 hover:bg-red-500/10" : ""}`}
+          className={`os-btn z-10 px-6 ${isBioActive ? "os-btn-danger" : "border-white/10 hover:border-white/30"}`}
         >
-          <Power className="w-3 h-3" /> {isBioActive ? "TERMINATE" : "START"}
+          <Power className="w-3.5 h-3.5" />{" "}
+          {isBioActive ? "End Session" : "Begin"}
         </button>
       </div>
     </GlassCard>

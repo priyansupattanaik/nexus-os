@@ -44,9 +44,10 @@ export default function Overclock() {
   };
 
   return (
-    <GlassCard title="Overclock" icon={<Timer />}>
-      <div className="flex flex-col h-full p-4 items-center justify-between">
-        <div className="flex gap-1 mb-2">
+    <GlassCard title="Focus Timer" icon={<Timer />}>
+      <div className="flex flex-col h-full p-5 items-center justify-between">
+        {/* Presets */}
+        <div className="flex gap-2 p-1 bg-white/5 rounded-lg">
           {[15, 25, 45].map((m) => (
             <button
               key={m}
@@ -54,29 +55,30 @@ export default function Overclock() {
                 setDuration(m);
                 setTimeLeft(m * 60);
               }}
-              className={`text-[10px] px-2 py-1 border rounded transition-colors ${duration === m ? "border-white text-white" : "border-white/10 text-gray-500 hover:border-white/30"}`}
+              className={`text-[10px] font-bold px-3 py-1.5 rounded-md transition-all ${duration === m ? "bg-white text-black shadow-sm" : "text-slate-400 hover:text-white"}`}
             >
               {m}m
             </button>
           ))}
         </div>
 
+        {/* Big Timer */}
         <div
-          className={`text-4xl font-mono font-bold ${isOverclockActive ? (timeLeft < 60 ? "text-red-500 animate-ping" : "text-white") : "text-slate-600"}`}
+          className={`text-5xl font-mono font-bold tracking-tighter ${isOverclockActive ? "text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-violet-400" : "text-slate-500"}`}
         >
           {formatTime(timeLeft)}
         </div>
 
         <button
           onClick={toggleTimer}
-          className={`tech-button w-full mt-2 ${isOverclockActive ? "border-red-500/50 text-red-500 hover:bg-red-500/10" : ""}`}
+          className={`os-btn w-full ${isOverclockActive ? "os-btn-danger" : "os-btn-primary"}`}
         >
           {isOverclockActive ? (
-            <Square className="w-3 h-3" />
+            <Square className="w-3.5 h-3.5" />
           ) : (
-            <Play className="w-3 h-3" />
+            <Play className="w-3.5 h-3.5" />
           )}
-          {isOverclockActive ? "ABORT" : "ENGAGE"}
+          {isOverclockActive ? "Stop" : "Start"}
         </button>
       </div>
     </GlassCard>

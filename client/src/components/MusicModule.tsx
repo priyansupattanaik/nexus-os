@@ -31,7 +31,6 @@ const TRACKS = [
 export default function MusicModule() {
   const { triggerPulse } = useSystemStore();
   const audioRef = useRef<HTMLAudioElement | null>(null);
-
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTrack, setCurrentTrack] = useState(0);
   const [volume, setVolume] = useState(0.5);
@@ -41,15 +40,12 @@ export default function MusicModule() {
     audioRef.current = new Audio(TRACKS[currentTrack].url);
     audioRef.current.volume = volume;
     audioRef.current.addEventListener("ended", nextTrack);
-
     const interval = setInterval(() => {
-      if (audioRef.current) {
+      if (audioRef.current)
         setProgress(
           (audioRef.current.currentTime / audioRef.current.duration) * 100 || 0,
         );
-      }
     }, 1000);
-
     return () => {
       audioRef.current?.pause();
       clearInterval(interval);
@@ -69,12 +65,10 @@ export default function MusicModule() {
     setCurrentTrack((currentTrack + 1) % TRACKS.length);
     setIsPlaying(true);
   };
-
   const prevTrack = () => {
     setCurrentTrack((currentTrack - 1 + TRACKS.length) % TRACKS.length);
     setIsPlaying(true);
   };
-
   const handleVolume = (e: any) => {
     const vol = parseFloat(e.target.value);
     setVolume(vol);
@@ -83,65 +77,66 @@ export default function MusicModule() {
 
   return (
     <GlassCard title="Sonic Deck" icon={<Music />}>
-      <div className="flex flex-col h-full p-4 justify-between relative">
-        {/* Visualizer Background */}
-        <div className="absolute bottom-0 left-0 right-0 h-1/2 flex items-end justify-between px-4 opacity-20 pointer-events-none">
-          {[...Array(12)].map((_, i) => (
+      <div className="flex flex-col h-full p-5 justify-between relative overflow-hidden">
+        {/* Visualizer */}
+        <div className="absolute bottom-0 left-0 right-0 h-32 flex items-end justify-between px-6 opacity-30 pointer-events-none">
+          {[...Array(16)].map((_, i) => (
             <div
               key={i}
-              className="w-1 bg-[hsl(var(--primary))]"
+              className="w-1.5 rounded-t-full bg-gradient-to-t from-blue-500 to-transparent"
               style={{
-                height: isPlaying ? `${Math.random() * 80 + 20}%` : "10%",
-                transition: "height 0.2s",
+                height: isPlaying ? `${Math.random() * 80 + 20}%` : "5%",
+                transition: "height 0.2s ease",
               }}
             />
           ))}
         </div>
 
-        <div className="z-10 text-center space-y-1 mt-2">
-          <h3 className="text-white font-bold text-sm truncate">
+        <div className="z-10 text-center mt-2">
+          <h3 className="text-white font-bold text-sm tracking-wide truncate">
             {TRACKS[currentTrack].title}
           </h3>
-          <p className="text-[hsl(var(--primary))] text-xs uppercase tracking-widest">
+          <p className="text-blue-300 text-xs font-medium uppercase tracking-widest mt-1">
             {TRACKS[currentTrack].artist}
           </p>
         </div>
 
-        {/* Controls */}
-        <div className="z-10 flex flex-col gap-3">
+        <div className="z-10 flex flex-col gap-4">
+          {/* Progress */}
           <div className="w-full h-1 bg-white/10 rounded-full overflow-hidden">
             <div
-              className="h-full bg-[hsl(var(--primary))]"
+              className="h-full bg-gradient-to-r from-blue-500 to-violet-500 transition-all duration-1000"
               style={{ width: `${progress}%` }}
             />
           </div>
 
-          <div className="flex items-center justify-center gap-4">
+          {/* Controls */}
+          <div className="flex items-center justify-center gap-6">
             <button
               onClick={prevTrack}
-              className="text-slate-400 hover:text-white"
+              className="text-slate-400 hover:text-white transition-colors"
             >
-              <SkipBack className="w-4 h-4" />
+              <SkipBack className="w-5 h-5" />
             </button>
             <button
               onClick={togglePlay}
-              className="w-10 h-10 rounded-full border border-[hsl(var(--primary))] bg-[hsl(var(--primary)/0.1)] flex items-center justify-center text-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))] hover:text-black transition-all"
+              className="w-12 h-12 rounded-full bg-white text-black flex items-center justify-center hover:scale-105 transition-transform shadow-lg shadow-white/20"
             >
               {isPlaying ? (
-                <Pause className="w-4 h-4" />
+                <Pause className="w-5 h-5" />
               ) : (
-                <Play className="w-4 h-4 ml-0.5" />
+                <Play className="w-5 h-5 ml-1" />
               )}
             </button>
             <button
               onClick={nextTrack}
-              className="text-slate-400 hover:text-white"
+              className="text-slate-400 hover:text-white transition-colors"
             >
-              <SkipForward className="w-4 h-4" />
+              <SkipForward className="w-5 h-5" />
             </button>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3 px-2">
             <Volume2 className="w-3 h-3 text-slate-500" />
             <input
               type="range"
@@ -150,7 +145,7 @@ export default function MusicModule() {
               step="0.1"
               value={volume}
               onChange={handleVolume}
-              className="w-full h-1 accent-[hsl(var(--primary))]"
+              className="w-full h-1 accent-blue-500 bg-white/10 rounded-lg appearance-none cursor-pointer"
             />
           </div>
         </div>
