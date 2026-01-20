@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from mangum import Mangum
-from app.services.db import supabase  # <<< Import from our new centralized service
-from app.api import ai, tasks       # <<< Import the new tasks router
+from app.services.db import supabase  # <<< NEW: Import from centralized service
+from app.api import ai, tasks       # <<< NEW: Import the tasks router
 
 app = FastAPI(title="NEXUS API")
 
@@ -17,7 +17,7 @@ app.add_middleware(
 
 # Register Routers
 app.include_router(ai.router, prefix="/api/ai", tags=["AI"])
-app.include_router(tasks.router, prefix="/api/tasks", tags=["Tasks"]) # <<< Register it here
+app.include_router(tasks.router, prefix="/api/tasks", tags=["Tasks"]) # <<< NEW: Register tasks
 
 @app.get("/")
 def read_root():
@@ -29,6 +29,7 @@ def health_check():
     if supabase:
         try:
             # Simple check to see if we can talk to Supabase
+            # We just check the auth service status indirectly or assume connected if client exists
             db_status = "connected"
         except Exception as e:
             db_status = f"error: {str(e)}"

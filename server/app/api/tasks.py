@@ -5,7 +5,7 @@ from app.services.db import supabase
 
 router = APIRouter()
 
-# --- Pydantic Models (Data Validation) ---
+# --- Data Models (Validation) ---
 class TaskCreate(BaseModel):
     title: str
 
@@ -19,7 +19,7 @@ class TaskResponse(BaseModel):
     is_completed: bool
     created_at: str
 
-# --- Endpoints ---
+# --- API Endpoints ---
 
 @router.get("/", response_model=List[TaskResponse])
 def get_tasks(authorization: str = Header(None)):
@@ -31,7 +31,8 @@ def get_tasks(authorization: str = Header(None)):
         raise HTTPException(status_code=401, detail="Missing Authorization header")
 
     try:
-        # Pass the user's token to Supabase so RLS policies work
+        # Pass the user's token to Supabase so RLS policies apply
+        # This ensures users only see THEIR tasks
         token = authorization.replace("Bearer ", "")
         supabase.postgrest.auth(token)
         
@@ -53,7 +54,7 @@ def create_task(task: TaskCreate, authorization: str = Header(None)):
         token = authorization.replace("Bearer ", "")
         supabase.postgrest.auth(token)
         
-        # Get user ID from token to insert correctly
+        # We need the User ID to insert the row correctly
         user = supabase.auth.get_user(token)
         user_id = user.user.id
 
@@ -65,7 +66,7 @@ def create_task(task: TaskCreate, authorization: str = Header(None)):
 
 @router.patch("/{task_id}", response_model=TaskResponse)
 def update_task(task_id: str, task: TaskUpdate, authorization: str = Header(None)):
-    """Update a task (toggle completion or change title)."""
+    """Update a task (mark complete or rename)."""
     if not supabase:
         raise HTTPException(status_code=500, detail="Database connection failed")
     
@@ -103,6 +104,7 @@ def delete_task(task_id: str, authorization: str = Header(None)):
         supabase.postgrest.auth(authorization.replace("Bearer ", ""))
         response = supabase.table("tasks").delete().eq("id", task_id).execute()
         
+        # Check if any row was actually deleted
         if not response.data:
             raise HTTPException(status_code=404, detail="Task not found")
             
