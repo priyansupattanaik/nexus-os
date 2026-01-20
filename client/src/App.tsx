@@ -191,3 +191,31 @@ function Dashboard() {
     </div>
   );
 }
+
+function LoadingScreen() {
+  return (
+    <div className="min-h-screen bg-black flex flex-col items-center justify-center relative overflow-hidden">
+      <div className="absolute inset-0 bg-[var(--nexus-accent)] opacity-10" />
+      <div className="relative z-10 flex flex-col items-center gap-6">
+        <div className="w-16 h-16 border-t-2 border-[var(--nexus-accent)] rounded-full animate-spin shadow-[0_0_20px_currentColor]" />
+        <div className="text-white font-mono text-xs tracking-[0.3em] animate-pulse">
+          SYSTEM INITIALIZING...
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AppContent() {
+  const { session, loading } = useAuth();
+  if (loading) return <LoadingScreen />;
+  return session ? <Dashboard /> : <Login />;
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
+  );
+}
