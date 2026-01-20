@@ -1,87 +1,66 @@
 import { useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import {
-  OrbitControls,
-  PerspectiveCamera,
+  MeshTransmissionMaterial,
   Environment,
   Float,
   Stars,
+  Sparkles,
 } from "@react-three/drei";
 import * as THREE from "three";
 
-function NeuralCore() {
-  const coreRef = useRef<THREE.Mesh>(null!);
-  const ring1Ref = useRef<THREE.Mesh>(null!);
-  const ring2Ref = useRef<THREE.Mesh>(null!);
-  const ring3Ref = useRef<THREE.Mesh>(null!);
+function Tesseract() {
+  const mesh = useRef<THREE.Mesh>(null);
+  const core = useRef<THREE.Mesh>(null);
 
-  useFrame((state, delta) => {
-    // Core Pulse
-    const t = state.clock.getElapsedTime();
-    const pulse = Math.sin(t * 2) * 0.1 + 1; // Pulse between 0.9 and 1.1
-    coreRef.current.scale.set(pulse, pulse, pulse);
-    coreRef.current.rotation.y += delta * 0.2;
+  useFrame((state) => {
+    if (!mesh.current || !core.current) return;
 
-    // Ring Rotations (Different speeds/axes)
-    ring1Ref.current.rotation.x += delta * 0.5;
-    ring1Ref.current.rotation.y += delta * 0.3;
+    // Slow, hypnotic rotation
+    mesh.current.rotation.x = state.clock.elapsedTime * 0.2;
+    mesh.current.rotation.y = state.clock.elapsedTime * 0.25;
 
-    ring2Ref.current.rotation.x -= delta * 0.3;
-    ring2Ref.current.rotation.z += delta * 0.4;
+    // Counter-rotation for the inner core
+    core.current.rotation.x = -state.clock.elapsedTime * 0.4;
+    core.current.rotation.z = state.clock.elapsedTime * 0.1;
 
-    ring3Ref.current.rotation.y -= delta * 0.6;
-    ring3Ref.current.rotation.x += delta * 0.2;
+    // Breathing scale effect
+    const scale = 1 + Math.sin(state.clock.elapsedTime) * 0.02;
+    mesh.current.scale.set(scale, scale, scale);
   });
 
   return (
-    <group scale={[1.5, 1.5, 1.5]}>
-      {/* Central Nucleus */}
-      <Float speed={2} rotationIntensity={0.5} floatIntensity={0.5}>
-        <mesh ref={coreRef}>
-          <icosahedronGeometry args={[1, 1]} />
-          <meshStandardMaterial
-            color="#3b82f6"
-            emissive="#2563eb"
-            emissiveIntensity={2}
-            wireframe={true}
-            transparent
-            opacity={0.8}
-          />
-        </mesh>
-        {/* Inner Glow */}
-        <mesh>
-          <icosahedronGeometry args={[0.8, 0]} />
-          <meshBasicMaterial color="#60a5fa" />
-        </mesh>
-      </Float>
-
-      {/* Orbital Ring 1 */}
-      <mesh ref={ring1Ref}>
-        <torusGeometry args={[1.8, 0.02, 16, 100]} />
-        <meshStandardMaterial
-          color="#93c5fd"
-          emissive="#60a5fa"
-          emissiveIntensity={1}
+    <group>
+      {/* Outer Glass Cube */}
+      <mesh ref={mesh}>
+        <boxGeometry args={[2.5, 2.5, 2.5]} />
+        {/* High-quality glass shader */}
+        <MeshTransmissionMaterial
+          backside
+          samples={4} // Quality
+          thickness={0.5} // Thickness of the glass
+          chromaticAberration={0.1} // Prism effect (rainbow edges)
+          anisotropy={0.1}
+          distortion={0.1} // Slight warp
+          distortionScale={0.1}
+          temporalDistortion={0.2}
+          iridescence={0.5}
+          iridescenceIOR={1}
+          iridescenceThicknessRange={[0, 1400]}
+          roughness={0.1} // Smooth but not perfect
+          clearcoat={1}
+          color={"#eef2ff"} // Slight blue tint
         />
       </mesh>
 
-      {/* Orbital Ring 2 */}
-      <mesh ref={ring2Ref}>
-        <torusGeometry args={[2.3, 0.02, 16, 100]} />
+      {/* Inner Glowing Core */}
+      <mesh ref={core}>
+        <octahedronGeometry args={[0.8, 0]} />
         <meshStandardMaterial
-          color="#93c5fd"
-          emissive="#60a5fa"
-          emissiveIntensity={0.8}
-        />
-      </mesh>
-
-      {/* Orbital Ring 3 (Vertical) */}
-      <mesh ref={ring3Ref}>
-        <torusGeometry args={[2.8, 0.03, 16, 100]} />
-        <meshStandardMaterial
-          color="#bfdbfe"
-          emissive="#93c5fd"
-          emissiveIntensity={0.5}
+          emissive="#0A84FF" // iOS Blue Glow
+          emissiveIntensity={4}
+          toneMapped={false}
+          color="#000000"
         />
       </mesh>
     </group>
@@ -90,36 +69,38 @@ function NeuralCore() {
 
 export default function CoreScene() {
   return (
-    <div className="w-full h-full min-h-[500px] bg-black/0">
-      <Canvas>
-        <PerspectiveCamera makeDefault position={[0, 0, 8]} />
-        <OrbitControls
-          enableZoom={false}
-          enablePan={false}
-          autoRotate
-          autoRotateSpeed={0.5}
-        />
+    <Canvas camera={{ position: [0, 0, 6], fov: 45 }}>
+      {/* Lighting environment */}
+      <ambientLight intensity={0.5} />
+      <pointLight position={[10, 10, 10]} intensity={1} color="#ffffff" />
+      <pointLight position={[-10, -10, -10]} intensity={0.5} color="#0A84FF" />
 
-        {/* Lighting */}
-        <ambientLight intensity={1} />
-        <pointLight position={[10, 10, 10]} intensity={2} color="#3b82f6" />
-        <pointLight position={[-10, -10, -10]} intensity={1} color="#a855f7" />
+      {/* Studio lighting reflection for the glass */}
+      <Environment preset="city" />
 
-        {/* The Construct */}
-        <NeuralCore />
+      {/* Floating Animation Wrapper */}
+      <Float speed={2} rotationIntensity={0.5} floatIntensity={0.5}>
+        <Tesseract />
+      </Float>
 
-        {/* Environment */}
-        <Stars
-          radius={100}
-          depth={50}
-          count={5000}
-          factor={4}
-          saturation={0}
-          fade
-          speed={1}
-        />
-        <Environment preset="city" />
-      </Canvas>
-    </div>
+      {/* Background Particles */}
+      <Stars
+        radius={100}
+        depth={50}
+        count={5000}
+        factor={4}
+        saturation={0}
+        fade
+        speed={1}
+      />
+      <Sparkles
+        count={50}
+        scale={5}
+        size={2}
+        speed={0.4}
+        opacity={0.5}
+        color="#0A84FF"
+      />
+    </Canvas>
   );
 }

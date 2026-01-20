@@ -2,82 +2,120 @@ import { useState } from "react";
 import { supabase } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
 
 export default function Login() {
+  const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [sent, setSent] = useState(false);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: window.location.origin,
-      },
-    });
+    setError("");
+    setMessage("");
 
-    if (error) {
-      alert(error.message);
-    } else {
-      setSent(true);
+    try {
+      if (isSignUp) {
+        // Sign Up Flow
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+        });
+        if (error) throw error;
+        setMessage("Account created! Please check your email to verify.");
+      } else {
+        // Sign In Flow
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+        if (error) throw error;
+      }
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-nexus-dark">
-      <Card className="w-[350px] bg-nexus-gray border-gray-800 text-white">
-        <CardHeader>
-          <CardTitle className="text-2xl text-center tracking-tighter">
-            NEXUS ACCESS
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {sent ? (
-            <div className="text-center space-y-4">
-              <div className="text-green-400">Magic Link Sent!</div>
-              <p className="text-sm text-gray-400">
-                Check your email to enter.
-              </p>
-              <Button
-                variant="outline"
-                className="w-full border-gray-700 hover:bg-gray-800 hover:text-white"
-                onClick={() => setSent(false)}
-              >
-                Back
-              </Button>
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Background Ambience */}
+      <div className="absolute top-[-20%] left-[-20%] w-[50vw] h-[50vw] bg-nexus-accent/20 rounded-full blur-[100px] pointer-events-none" />
+
+      {/* Glass Panel */}
+      <div className="glass-panel w-full max-w-md p-8 space-y-8 relative z-10 animate-in fade-in zoom-in-95 duration-500">
+        <div className="text-center space-y-2">
+          <h1 className="text-3xl font-semibold tracking-tight text-white">
+            {isSignUp ? "Create Account" : "Welcome Back"}
+          </h1>
+          <p className="text-nexus-subtext text-sm">
+            {isSignUp
+              ? "Enter your details to join NEXUS"
+              : "Sign in to access your OS"}
+          </p>
+        </div>
+
+        <form onSubmit={handleAuth} className="space-y-4">
+          <div className="space-y-2">
+            <Input
+              type="email"
+              placeholder="Email Address"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="glass-input"
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <Input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="glass-input"
+              required
+            />
+          </div>
+
+          {error && (
+            <div className="text-red-400 text-xs text-center bg-red-900/20 p-2 rounded border border-red-500/20">
+              {error}
             </div>
-          ) : (
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div className="space-y-2">
-                <Input
-                  type="email"
-                  placeholder="name@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="bg-black border-gray-700 text-white placeholder:text-gray-500"
-                />
-              </div>
-              <Button
-                type="submit"
-                className="w-full bg-white text-black hover:bg-gray-200"
-                disabled={loading}
-              >
-                {loading ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  "Enter System"
-                )}
-              </Button>
-            </form>
           )}
-        </CardContent>
-      </Card>
+          {message && (
+            <div className="text-green-400 text-xs text-center bg-green-900/20 p-2 rounded border border-green-500/20">
+              {message}
+            </div>
+          )}
+
+          <Button
+            type="submit"
+            className="w-full glass-button hover:bg-white/20 h-11"
+            disabled={loading}
+          >
+            {loading ? "Processing..." : isSignUp ? "Sign Up" : "Sign In"}
+          </Button>
+        </form>
+
+        <div className="text-center">
+          <button
+            onClick={() => {
+              setIsSignUp(!isSignUp);
+              setError("");
+              setMessage("");
+            }}
+            className="text-xs text-nexus-subtext hover:text-white transition-colors"
+          >
+            {isSignUp
+              ? "Already have an account? Sign In"
+              : "Don't have an account? Create one"}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
