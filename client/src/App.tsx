@@ -9,13 +9,17 @@ import OmniCommand from "@/components/OmniCommand";
 import { Button } from "@/components/ui/button";
 import { useSystemStore } from "@/lib/store";
 
-// Lazy Load Modules
+// Lazy Load All Modules
 const CoreScene = lazy(() => import("@/components/3d/CoreScene"));
 const TasksModule = lazy(() => import("@/components/TasksModule"));
 const HabitsModule = lazy(() => import("@/components/HabitsModule"));
 const FinanceModule = lazy(() => import("@/components/FinanceModule"));
 const JournalModule = lazy(() => import("@/components/JournalModule"));
 const MusicModule = lazy(() => import("@/components/MusicModule"));
+// Phase 2 Modules
+const BioRegulator = lazy(() => import("@/components/BioRegulator"));
+const Overclock = lazy(() => import("@/components/Overclock"));
+const FrequencyTuner = lazy(() => import("@/components/FrequencyTuner"));
 
 function Dashboard() {
   const { session } = useAuth();
@@ -132,17 +136,28 @@ function Dashboard() {
             </div>
           </Suspense>
 
-          <div className="col-span-1 flex flex-col gap-6">
-            <Suspense
-              fallback={<div className="holo-panel min-h-[200px] bg-white/5" />}
-            >
-              <FinanceModule />
-            </Suspense>
-            <Suspense
-              fallback={<div className="holo-panel min-h-[200px] bg-white/5" />}
-            >
-              <MusicModule />
-            </Suspense>
+          {/* Right Stack: Utilities */}
+          <div className="col-span-1 grid grid-cols-2 gap-4 auto-rows-min">
+            <div className="col-span-2">
+              <Suspense fallback={<div className="holo-panel min-h-[200px]" />}>
+                <MusicModule />
+              </Suspense>
+            </div>
+            <div className="col-span-1">
+              <Suspense fallback={<div className="holo-panel h-40" />}>
+                <Overclock />
+              </Suspense>
+            </div>
+            <div className="col-span-1">
+              <Suspense fallback={<div className="holo-panel h-40" />}>
+                <FrequencyTuner />
+              </Suspense>
+            </div>
+            <div className="col-span-2">
+              <Suspense fallback={<div className="holo-panel h-40" />}>
+                <BioRegulator />
+              </Suspense>
+            </div>
           </div>
 
           <Suspense
@@ -159,44 +174,20 @@ function Dashboard() {
               <HabitsModule />
             </div>
           </Suspense>
-          <Suspense
-            fallback={<div className="holo-panel min-h-[300px] bg-white/5" />}
-          >
-            <div className="col-span-1 min-h-[300px]">
+          <div className="col-span-1 flex flex-col gap-6">
+            <Suspense
+              fallback={<div className="holo-panel min-h-[200px] bg-white/5" />}
+            >
+              <FinanceModule />
+            </Suspense>
+            <Suspense
+              fallback={<div className="holo-panel min-h-[200px] bg-white/5" />}
+            >
               <JournalModule />
-            </div>
-          </Suspense>
+            </Suspense>
+          </div>
         </div>
       </main>
     </div>
-  );
-}
-
-function LoadingScreen() {
-  return (
-    <div className="min-h-screen bg-black flex flex-col items-center justify-center relative overflow-hidden">
-      <div className="absolute inset-0 bg-[var(--nexus-accent)] opacity-10" />
-      <div className="relative z-10 flex flex-col items-center gap-6">
-        <div className="w-16 h-16 border-t-2 border-[var(--nexus-accent)] rounded-full animate-spin shadow-[0_0_20px_currentColor]" />
-        <div className="text-white font-mono text-xs tracking-[0.3em] animate-pulse">
-          SYSTEM INITIALIZING...
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function AppContent() {
-  const { session, loading } = useAuth();
-  if (loading) return <LoadingScreen />;
-  return session ? <Dashboard /> : <Login />;
-}
-
-// Ensure this default export exists!
-export default function App() {
-  return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
   );
 }

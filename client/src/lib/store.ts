@@ -8,17 +8,23 @@ interface SystemStore {
   setMode: (mode: SystemState) => void;
   triggerPulse: (type: "success" | "error" | "neutral") => void;
 
-  // Focus Mode
   isFocusMode: boolean;
   setFocusMode: (active: boolean) => void;
 
-  // Omni-Command
   isOmniOpen: boolean;
   setOmniOpen: (open: boolean) => void;
 
-  // Chroma Shift (Theme)
   theme: ThemeColor;
   setTheme: (theme: ThemeColor) => void;
+
+  // --- PHASE 2 NEW STATES ---
+  isBioActive: boolean;
+  setBioActive: (active: boolean) => void;
+
+  isOverclockActive: boolean;
+  setOverclockActive: (active: boolean) => void;
+  overclockProgress: number; // 0.0 to 1.0
+  setOverclockProgress: (progress: number) => void;
 }
 
 export const useSystemStore = create<SystemStore>((set) => ({
@@ -42,4 +48,13 @@ export const useSystemStore = create<SystemStore>((set) => ({
 
   theme: "cyan",
   setTheme: (theme) => set({ theme }),
+
+  // Phase 2
+  isBioActive: false,
+  setBioActive: (active) => set({ isBioActive: active }),
+
+  isOverclockActive: false,
+  setOverclockActive: (active) => set({ isOverclockActive: active }),
+  overclockProgress: 0,
+  setOverclockProgress: (progress) => set({ overclockProgress: progress }),
 }));
