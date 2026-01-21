@@ -21,11 +21,11 @@ const DaemonPet = lazy(() => import("@/components/DaemonPet"));
 const DreamDecoder = lazy(() => import("@/components/DreamDecoder"));
 const ExplorerModule = lazy(() => import("@/components/ExplorerModule"));
 const SettingsModule = lazy(() => import("@/components/SettingsModule"));
-const TerminalModule = lazy(() => import("@/components/TerminalModule")); // <<< NEW
+const TerminalModule = lazy(() => import("@/components/TerminalModule"));
 
 function Dashboard() {
   const { session } = useAuth();
-  const { activeTab } = useSystemStore(); // Global Navigation
+  const { activeTab } = useSystemStore();
   const [showProfile, setShowProfile] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
