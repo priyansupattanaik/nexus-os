@@ -1,46 +1,22 @@
-from fastapi import APIRouter, HTTPException, Header
-from pydantic import BaseModel
-from typing import Optional
-from app.services.db import supabase
+from fastapi import APIRouter, Depends, HTTPException
+from app.dependencies import get_authenticated_db
 
 router = APIRouter()
 
-class ProfileUpdate(BaseModel):
-    full_name: Optional[str] = None
-    avatar_url: Optional[str] = None
-
 @router.get("/")
-def get_profile(authorization: str = Header(None)):
-    """Fetch the current user's profile."""
-    if not authorization:
-        raise HTTPException(status_code=401, detail="Missing Token")
-
+def get_profile(db = Depends(get_authenticated_db)):
     try:
-        token = authorization.replace("Bearer ", "")
-        user = supabase.auth.get_user(token)
-        user_id = user.user.id
+        # Fetch the user directly from the secure session
+        user_response = db.auth.get_user()
+        user = user_response.user
         
-        # Fetch from the profiles table
-        response = supabase.table("profiles").select("*").eq("id", user_id).single().execute()
-        return response.data
-    except Exception as e:
-        # If profile is missing (rare), return basic info from auth
-        return {"id": user_id, "email": user.user.email}
-
-@router.patch("/")
-def update_profile(profile: ProfileUpdate, authorization: str = Header(None)):
-    """Update profile details."""
-    if not authorization:
-        raise HTTPException(status_code=401, detail="Missing Token")
-
-    try:
-        token = authorization.replace("Bearer ", "")
-        user = supabase.auth.get_user(token)
-        user_id = user.user.id
-        
-        data = {k: v for k, v in profile.dict().items() if v is not None}
-        
-        response = supabase.table("profiles").update(data).eq("id", user_id).execute()
-        return response.data
+        return {
+            "id": user.id,
+            "email": user.email,
+            "last_sign_in_at": user.last_sign_in_at,
+            "app_metadata": user.app_metadata,
+            "user_metadata": user.user_metadata,
+            "aud": user.aud
+        }
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
