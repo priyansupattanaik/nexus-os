@@ -1,13 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { GlassCard } from "@/components/ui/GlassCard";
-import {
-  Play,
-  Pause,
-  SkipForward,
-  SkipBack,
-  Music,
-  Volume2,
-} from "lucide-react";
+import { Play, Pause, SkipForward, SkipBack, Volume2 } from "lucide-react";
 import { useSystemStore } from "@/lib/store";
 
 const TRACKS = [
@@ -76,80 +68,78 @@ export default function MusicModule() {
   };
 
   return (
-    <GlassCard title="Sonic Deck" icon={<Music />}>
-      <div className="flex flex-col h-full p-5 justify-between relative overflow-hidden">
-        {/* Visualizer */}
-        <div className="absolute bottom-0 left-0 right-0 h-32 flex items-end justify-between px-6 opacity-30 pointer-events-none">
-          {[...Array(16)].map((_, i) => (
-            <div
-              key={i}
-              className="w-1.5 rounded-t-full bg-gradient-to-t from-blue-500 to-transparent"
-              style={{
-                height: isPlaying ? `${Math.random() * 80 + 20}%` : "5%",
-                transition: "height 0.2s ease",
-              }}
-            />
-          ))}
+    <div className="flex flex-col h-full p-5 justify-between relative overflow-hidden bg-black/20">
+      {/* Visualizer */}
+      <div className="absolute bottom-0 left-0 right-0 h-40 flex items-end justify-between px-6 opacity-30 pointer-events-none">
+        {[...Array(16)].map((_, i) => (
+          <div
+            key={i}
+            className="w-2 rounded-t-full bg-gradient-to-t from-blue-500 to-transparent"
+            style={{
+              height: isPlaying ? `${Math.random() * 80 + 20}%` : "5%",
+              transition: "height 0.2s ease",
+            }}
+          />
+        ))}
+      </div>
+
+      <div className="z-10 text-center mt-4">
+        <h3 className="text-white font-bold text-lg tracking-wide truncate">
+          {TRACKS[currentTrack].title}
+        </h3>
+        <p className="text-blue-300 text-xs font-medium uppercase tracking-widest mt-1">
+          {TRACKS[currentTrack].artist}
+        </p>
+      </div>
+
+      <div className="z-10 flex flex-col gap-6 mb-2">
+        {/* Progress */}
+        <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-gradient-to-r from-blue-500 to-violet-500 transition-all duration-1000"
+            style={{ width: `${progress}%` }}
+          />
         </div>
 
-        <div className="z-10 text-center mt-2">
-          <h3 className="text-white font-bold text-sm tracking-wide truncate">
-            {TRACKS[currentTrack].title}
-          </h3>
-          <p className="text-blue-300 text-xs font-medium uppercase tracking-widest mt-1">
-            {TRACKS[currentTrack].artist}
-          </p>
+        {/* Controls */}
+        <div className="flex items-center justify-center gap-8">
+          <button
+            onClick={prevTrack}
+            className="text-slate-400 hover:text-white transition-colors"
+          >
+            <SkipBack className="w-6 h-6" />
+          </button>
+          <button
+            onClick={togglePlay}
+            className="w-14 h-14 rounded-full bg-white text-black flex items-center justify-center hover:scale-105 transition-transform shadow-lg shadow-white/20"
+          >
+            {isPlaying ? (
+              <Pause className="w-6 h-6" />
+            ) : (
+              <Play className="w-6 h-6 ml-1" />
+            )}
+          </button>
+          <button
+            onClick={nextTrack}
+            className="text-slate-400 hover:text-white transition-colors"
+          >
+            <SkipForward className="w-6 h-6" />
+          </button>
         </div>
 
-        <div className="z-10 flex flex-col gap-4">
-          {/* Progress */}
-          <div className="w-full h-1 bg-white/10 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-gradient-to-r from-blue-500 to-violet-500 transition-all duration-1000"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-
-          {/* Controls */}
-          <div className="flex items-center justify-center gap-6">
-            <button
-              onClick={prevTrack}
-              className="text-slate-400 hover:text-white transition-colors"
-            >
-              <SkipBack className="w-5 h-5" />
-            </button>
-            <button
-              onClick={togglePlay}
-              className="w-12 h-12 rounded-full bg-white text-black flex items-center justify-center hover:scale-105 transition-transform shadow-lg shadow-white/20"
-            >
-              {isPlaying ? (
-                <Pause className="w-5 h-5" />
-              ) : (
-                <Play className="w-5 h-5 ml-1" />
-              )}
-            </button>
-            <button
-              onClick={nextTrack}
-              className="text-slate-400 hover:text-white transition-colors"
-            >
-              <SkipForward className="w-5 h-5" />
-            </button>
-          </div>
-
-          <div className="flex items-center gap-3 px-2">
-            <Volume2 className="w-3 h-3 text-slate-500" />
-            <input
-              type="range"
-              min="0"
-              max="1"
-              step="0.1"
-              value={volume}
-              onChange={handleVolume}
-              className="w-full h-1 accent-blue-500 bg-white/10 rounded-lg appearance-none cursor-pointer"
-            />
-          </div>
+        <div className="flex items-center gap-3 px-4">
+          <Volume2 className="w-4 h-4 text-slate-500" />
+          <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.1"
+            value={volume}
+            onChange={handleVolume}
+            className="w-full h-1 accent-blue-500 bg-white/10 rounded-lg appearance-none cursor-pointer"
+          />
         </div>
       </div>
-    </GlassCard>
+    </div>
   );
 }

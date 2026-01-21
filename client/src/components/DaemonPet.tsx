@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { fetchTasks } from "@/lib/api";
-import { GlassCard } from "@/components/ui/GlassCard";
 import { Bot, Zap, Battery, Activity, Smile, Frown, Moon } from "lucide-react";
 
 export default function DaemonPet() {
@@ -52,38 +51,36 @@ export default function DaemonPet() {
   const getIcon = () => {
     switch (mood) {
       case "HAPPY":
-        return <Smile className="w-12 h-12 text-emerald-400 animate-bounce" />;
+        return <Smile className="w-20 h-20 text-emerald-400 animate-bounce" />;
       case "ANXIOUS":
-        return <Frown className="w-12 h-12 text-rose-400 animate-pulse" />;
+        return <Frown className="w-20 h-20 text-rose-400 animate-pulse" />;
       case "SLEEP":
-        return <Moon className="w-12 h-12 text-violet-400 opacity-50" />;
+        return <Moon className="w-20 h-20 text-violet-400 opacity-50" />;
       default:
-        return <Bot className="w-12 h-12 text-blue-400" />;
+        return <Bot className="w-20 h-20 text-blue-400" />;
     }
   };
 
   return (
-    <GlassCard title="Daemon" icon={<Zap />}>
-      <div className="flex flex-col items-center justify-center h-full p-4 relative overflow-hidden">
-        <div className="absolute inset-0 bg-blue-500/5 animate-pulse" />
+    <div className="flex flex-col items-center justify-center h-full p-4 relative overflow-hidden bg-black/20">
+      <div className="absolute inset-0 bg-blue-500/5 animate-pulse pointer-events-none" />
 
-        <div className="z-10 mb-3 filter drop-shadow-[0_0_15px_rgba(59,130,246,0.5)] transition-all duration-500">
-          {getIcon()}
+      <div className="z-10 mb-6 filter drop-shadow-[0_0_20px_rgba(59,130,246,0.6)] transition-all duration-500">
+        {getIcon()}
+      </div>
+
+      <div className="w-full flex justify-between items-center px-4 py-3 rounded-2xl bg-black/40 border border-white/5 backdrop-blur-md z-10">
+        <div className="flex items-center gap-2 text-xs text-slate-300 font-bold uppercase tracking-wider">
+          <Activity className="w-4 h-4 text-blue-400" />
+          <span>{message}</span>
         </div>
-
-        <div className="w-full flex justify-between items-center px-3 py-2 rounded-xl bg-black/20 border border-white/5 backdrop-blur-md z-10">
-          <div className="flex items-center gap-2 text-[10px] text-slate-300 font-bold uppercase tracking-wider">
-            <Activity className="w-3 h-3 text-blue-400" />
-            <span>{message}</span>
-          </div>
-          <div className="flex items-center gap-2 text-[10px] text-slate-400 font-mono">
-            <Battery
-              className={`w-3 h-3 ${battery < 20 ? "text-red-500" : "text-emerald-500"}`}
-            />
-            <span>{battery.toFixed(0)}%</span>
-          </div>
+        <div className="flex items-center gap-2 text-xs text-slate-400 font-mono">
+          <Battery
+            className={`w-4 h-4 ${battery < 20 ? "text-red-500" : "text-emerald-500"}`}
+          />
+          <span>{battery.toFixed(0)}%</span>
         </div>
       </div>
-    </GlassCard>
+    </div>
   );
 }
