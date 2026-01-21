@@ -13,6 +13,7 @@ class SettingsUpdate(BaseModel):
 
 @router.get("/")
 def get_settings(db = Depends(get_authenticated_db)):
+    # Explicitly filter by user_id
     response = db.table("settings").select("*").eq("user_id", db.user_id).execute()
     if not response.data:
         default = {"user_id": db.user_id}
@@ -24,4 +25,5 @@ def get_settings(db = Depends(get_authenticated_db)):
 def update_settings(settings: SettingsUpdate, db = Depends(get_authenticated_db)):
     data = {k: v for k, v in settings.dict().items() if v is not None}
     data["user_id"] = db.user_id
+    # Upsert with user_id ensures we only touch this user's settings
     return db.table("settings").upsert(data).execute().data[0]

@@ -13,8 +13,8 @@ class TaskUpdate(BaseModel):
 
 @router.get("/")
 def get_tasks(db = Depends(get_authenticated_db)):
-    # RLS ensures only this user's tasks are returned
-    res = db.table("tasks").select("*").order("created_at", desc=True).execute()
+    # Explicitly filter by user_id
+    res = db.table("tasks").select("*").eq("user_id", db.user_id).order("created_at", desc=True).execute()
     return res.data
 
 @router.post("/")
@@ -31,11 +31,11 @@ def update_task(task_id: str, updates: TaskUpdate, db = Depends(get_authenticate
         return {"msg": "Ignoring sync for temp ID"}
         
     data = {k: v for k, v in updates.dict().items() if v is not None}
-    db.table("tasks").update(data).eq("id", task_id).execute()
+    db.table("tasks").update(data).eq("id", task_id).eq("user_id", db.user_id).execute()
     return {"msg": "Updated"}
 
 @router.delete("/{task_id}")
 def delete_task(task_id: str, db = Depends(get_authenticated_db)):
     if not task_id or "." in task_id: return {"msg": "Skipped"}
-    db.table("tasks").delete().eq("id", task_id).execute()
+    db.table("tasks").delete().eq("id", task_id).eq("user_id", db.user_id).execute()
     return {"msg": "Deleted"}

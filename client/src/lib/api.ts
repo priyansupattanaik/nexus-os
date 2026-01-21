@@ -7,7 +7,25 @@ const getHeaders = (token: string) => ({
 
 async function apiRequest(path: string, options: RequestInit) {
   try {
-    const res = await fetch(`${API_URL}${path}`, options);
+    // Robust URL construction to prevent /api/api issues
+    let base = API_URL;
+    if (base.endsWith('/')) {
+        base = base.slice(0, -1);
+    }
+
+    let endpoint = path;
+    if (endpoint.startsWith('/')) {
+        endpoint = endpoint.slice(1);
+    }
+
+    // Check for duplication if base ends in /api and endpoint starts with api/
+    if (base.endsWith('/api') && endpoint.startsWith('api/')) {
+        endpoint = endpoint.substring(4); // Remove 'api/'
+    }
+
+    const url = `${base}/${endpoint}`;
+
+    const res = await fetch(url, options);
     if (res.status === 401) throw new Error("Authentication Required");
     if (!res.ok) throw new Error("Link Failure");
     return res.json();
@@ -61,3 +79,70 @@ export const sendVoiceCommand = (command: string, token: string) =>
 // --- DIAGNOSTICS ---
 export const runDiagnostics = (token: string) =>
   apiRequest("/api/debug/run_diagnostics", { headers: getHeaders(token) });
+
+// --- HABITS MODULE ---
+export const fetchHabits = (token: string) =>
+  apiRequest("/api/habits/", { headers: getHeaders(token) });
+export const createHabit = (title: string, token: string) =>
+  apiRequest("/api/habits/", {
+    method: "POST",
+    headers: getHeaders(token),
+    body: JSON.stringify({ title }),
+  });
+export const incrementHabit = (id: string, token: string) =>
+  apiRequest(`/api/habits/${id}/increment`, {
+    method: "PATCH",
+    headers: getHeaders(token),
+  });
+export const deleteHabit = (id: string, token: string) =>
+  apiRequest(`/api/habits/${id}`, {
+    method: "DELETE",
+    headers: getHeaders(token),
+  });
+
+// --- FINANCE MODULE ---
+export const fetchTransactions = (token: string) =>
+  apiRequest("/api/finance/", { headers: getHeaders(token) });
+export const addTransaction = (transaction: any, token: string) =>
+  apiRequest("/api/finance/", {
+    method: "POST",
+    headers: getHeaders(token),
+    body: JSON.stringify(transaction),
+  });
+export const deleteTransaction = (id: string, token: string) =>
+  apiRequest(`/api/finance/${id}`, {
+    method: "DELETE",
+    headers: getHeaders(token),
+  });
+
+// --- JOURNAL MODULE ---
+export const fetchJournal = (token: string) =>
+  apiRequest("/api/journal/", { headers: getHeaders(token) });
+export const createEntry = (content: string, token: string, mood: string = "neutral") =>
+  apiRequest("/api/journal/", {
+    method: "POST",
+    headers: getHeaders(token),
+    body: JSON.stringify({ content, mood }),
+  });
+export const deleteEntry = (id: string, token: string) =>
+  apiRequest(`/api/journal/${id}`, {
+    method: "DELETE",
+    headers: getHeaders(token),
+  });
+
+// --- EXPLORER MODULE ---
+export const fetchFiles = (parentId: string | null, token: string) => {
+    const query = parentId ? `?parent_id=${parentId}` : '';
+    return apiRequest(`/api/explorer/${query}`, { headers: getHeaders(token) });
+};
+export const createFile = (file: any, token: string) =>
+  apiRequest("/api/explorer/", {
+    method: "POST",
+    headers: getHeaders(token),
+    body: JSON.stringify(file),
+  });
+export const deleteFile = (id: string, token: string) =>
+  apiRequest(`/api/explorer/${id}`, {
+    method: "DELETE",
+    headers: getHeaders(token),
+  });

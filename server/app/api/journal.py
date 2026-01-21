@@ -10,7 +10,7 @@ class EntryCreate(BaseModel):
 
 @router.get("/")
 def get_entries(db = Depends(get_authenticated_db)):
-    return db.table("journal_entries").select("*").order("created_at", desc=True).execute().data
+    return db.table("journal_entries").select("*").eq("user_id", db.user_id).order("created_at", desc=True).execute().data
 
 @router.post("/")
 def create_entry(entry: EntryCreate, db = Depends(get_authenticated_db)):
@@ -19,5 +19,5 @@ def create_entry(entry: EntryCreate, db = Depends(get_authenticated_db)):
 
 @router.delete("/{entry_id}")
 def delete_entry(entry_id: str, db = Depends(get_authenticated_db)):
-    db.table("journal_entries").delete().eq("id", entry_id).execute()
+    db.table("journal_entries").delete().eq("id", entry_id).eq("user_id", db.user_id).execute()
     return {"msg": "Deleted"}

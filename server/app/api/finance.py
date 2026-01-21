@@ -11,7 +11,7 @@ class TransactionCreate(BaseModel):
 
 @router.get("/")
 def get_transactions(db = Depends(get_authenticated_db)):
-    return db.table("transactions").select("*").order("created_at", desc=True).execute().data
+    return db.table("transactions").select("*").eq("user_id", db.user_id).order("created_at", desc=True).execute().data
 
 @router.post("/")
 def add_transaction(txn: TransactionCreate, db = Depends(get_authenticated_db)):
@@ -20,5 +20,5 @@ def add_transaction(txn: TransactionCreate, db = Depends(get_authenticated_db)):
 
 @router.delete("/{txn_id}")
 def delete_transaction(txn_id: str, db = Depends(get_authenticated_db)):
-    db.table("transactions").delete().eq("id", txn_id).execute()
+    db.table("transactions").delete().eq("id", txn_id).eq("user_id", db.user_id).execute()
     return {"msg": "Deleted"}

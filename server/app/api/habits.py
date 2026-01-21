@@ -9,7 +9,7 @@ class HabitCreate(BaseModel):
 
 @router.get("/")
 def get_habits(db = Depends(get_authenticated_db)):
-    return db.table("habits").select("*").order("created_at", desc=True).execute().data
+    return db.table("habits").select("*").eq("user_id", db.user_id).order("created_at", desc=True).execute().data
 
 @router.post("/")
 def create_habit(habit: HabitCreate, db = Depends(get_authenticated_db)):
@@ -18,12 +18,13 @@ def create_habit(habit: HabitCreate, db = Depends(get_authenticated_db)):
 
 @router.patch("/{habit_id}/increment")
 def increment_habit(habit_id: str, db = Depends(get_authenticated_db)):
-    curr = db.table("habits").select("streak").eq("id", habit_id).execute().data[0]
+    # Verify ownership before incrementing
+    curr = db.table("habits").select("streak").eq("id", habit_id).eq("user_id", db.user_id).execute().data[0]
     new_streak = curr['streak'] + 1
-    db.table("habits").update({"streak": new_streak}).eq("id", habit_id).execute()
+    db.table("habits").update({"streak": new_streak}).eq("id", habit_id).eq("user_id", db.user_id).execute()
     return {"streak": new_streak}
 
 @router.delete("/{habit_id}")
 def delete_habit(habit_id: str, db = Depends(get_authenticated_db)):
-    db.table("habits").delete().eq("id", habit_id).execute()
+    db.table("habits").delete().eq("id", habit_id).eq("user_id", db.user_id).execute()
     return {"msg": "Deleted"}

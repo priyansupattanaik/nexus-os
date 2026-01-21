@@ -13,7 +13,7 @@ class FileCreate(BaseModel):
 
 @router.get("/")
 def get_files(parent_id: Optional[str] = None, db = Depends(get_authenticated_db)):
-    query = db.table("files").select("*").order("type", desc=True).order("name")
+    query = db.table("files").select("*").eq("user_id", db.user_id).order("type", desc=True).order("name")
     if parent_id:
         query = query.eq("parent_id", parent_id)
     else:
@@ -33,5 +33,5 @@ def create_file(file: FileCreate, db = Depends(get_authenticated_db)):
 
 @router.delete("/{file_id}")
 def delete_file(file_id: str, db = Depends(get_authenticated_db)):
-    db.table("files").delete().eq("id", file_id).execute()
+    db.table("files").delete().eq("id", file_id).eq("user_id", db.user_id).execute()
     return {"msg": "Deleted"}
