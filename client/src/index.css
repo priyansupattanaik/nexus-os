@@ -17,18 +17,28 @@
   }
 
   body {
-    @apply antialiased text-[var(--text-primary)] bg-[var(--bg-main)] overflow-x-hidden selection:bg-[var(--accent)]/20 selection:text-[var(--accent)];
+    @apply antialiased overflow-x-hidden;
+    color: var(--text-primary);
+    background-color: var(--bg-main);
     font-family: var(--font-sans);
+  }
+
+  /* Selection styles moved to standard CSS to avoid Tailwind opacity issues with vars */
+  ::selection {
+    background-color: rgba(14, 165, 233, 0.2); /* Sky-500 with 20% opacity */
+    color: var(--accent);
   }
 }
 
 @layer components {
   /* ZENITH CARD - The core building block */
   .zenith-card {
-    @apply bg-[var(--bg-card)] rounded-2xl border border-[var(--border)] transition-all duration-300;
+    @apply rounded-2xl border transition-all duration-300;
+    background-color: var(--bg-card);
+    border-color: var(--border);
     box-shadow:
       0 4px 6px -1px rgba(0, 0, 0, 0.05),
-      0 2px 4px -1px rgba(0, 0, 0, 0.03); /* Soft Shadow */
+      0 2px 4px -1px rgba(0, 0, 0, 0.03);
   }
 
   .zenith-card:hover {
@@ -40,7 +50,7 @@
 
   /* INPUTS (Clean & Solid) */
   .zenith-input {
-    @apply bg-gray-50 border border-gray-200 rounded-lg px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20 focus:border-[var(--accent)] transition-all font-medium;
+    @apply bg-gray-50 border border-gray-200 rounded-lg px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all font-medium;
   }
 
   /* BUTTONS (Tactile & Minimal) */
@@ -49,7 +59,8 @@
   }
 
   .zenith-btn-primary {
-    @apply bg-[var(--accent)] text-white border-transparent hover:bg-sky-600 shadow-md shadow-sky-500/20;
+    @apply text-white border-transparent hover:bg-sky-600 shadow-md shadow-sky-500/20;
+    background-color: var(--accent);
   }
 
   .zenith-btn-danger {
