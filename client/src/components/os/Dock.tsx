@@ -33,40 +33,56 @@ export default function Dock() {
   const { toggleWindow, windows, activeWindow } = useSystemStore();
 
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
-      <div className="flex items-end gap-3 px-4 py-3 rounded-2xl bg-black/40 backdrop-blur-2xl border border-white/10 shadow-2xl transition-all hover:scale-[1.02]">
-        {APPS.map((app) => {
-          const isOpen = windows[app.id].isOpen;
-          const isActive = activeWindow === app.id;
+    <>
+      {/* Mobile Spacer to prevent content being hidden behind dock */}
+      <div className="h-20 w-full md:hidden" />
 
-          return (
-            <button
-              key={app.id}
-              onClick={() => toggleWindow(app.id)}
-              className="group relative flex flex-col items-center gap-1 transition-all duration-300 hover:-translate-y-2"
-            >
-              {/* Tooltip */}
-              <span className="absolute -top-10 bg-black/80 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap border border-white/10">
-                {app.label}
-              </span>
+      <div className="fixed bottom-0 left-0 right-0 md:bottom-6 md:left-1/2 md:-translate-x-1/2 z-[2000]">
+        <div
+          className="flex items-center justify-between md:justify-center md:gap-3 px-6 py-4 md:py-3 
+              bg-black/90 md:bg-black/40 backdrop-blur-2xl 
+              border-t md:border border-white/10 md:rounded-2xl 
+              shadow-2xl md:hover:scale-[1.02] transition-all overflow-x-auto no-scrollbar"
+        >
+          {APPS.map((app) => {
+            const isOpen =
+              windows[app.id].isOpen && !windows[app.id].isMinimized;
+            const isActive = activeWindow === app.id;
 
-              {/* Icon Box */}
-              <div
-                className={`w-12 h-12 rounded-xl flex items-center justify-center border transition-all duration-300 ${isOpen ? "bg-white/10 border-white/20" : "bg-transparent border-transparent hover:bg-white/5"}`}
+            return (
+              <button
+                key={app.id}
+                onClick={() => toggleWindow(app.id)}
+                className="group relative flex flex-col items-center gap-1 min-w-[3rem] md:min-w-0"
               >
-                <app.icon
-                  className={`w-6 h-6 ${app.color} transition-transform group-hover:scale-110`}
-                />
-              </div>
+                {/* Desktop Tooltip */}
+                <span className="hidden md:block absolute -top-10 bg-black/90 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap border border-white/10">
+                  {app.label}
+                </span>
 
-              {/* Active Dot */}
-              <div
-                className={`w-1 h-1 rounded-full bg-white transition-opacity ${isOpen ? "opacity-100" : "opacity-0"}`}
-              />
-            </button>
-          );
-        })}
+                {/* Icon Box */}
+                <div
+                  className={`w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center border transition-all duration-300 
+                              ${
+                                isActive
+                                  ? "bg-white/10 border-white/30 shadow-[0_0_15px_rgba(255,255,255,0.1)]"
+                                  : "bg-transparent border-transparent hover:bg-white/5"
+                              }`}
+                >
+                  <app.icon
+                    className={`w-5 h-5 md:w-6 md:h-6 ${app.color} transition-transform md:group-hover:scale-110`}
+                  />
+                </div>
+
+                {/* Active Dot */}
+                <div
+                  className={`w-1 h-1 rounded-full bg-white transition-opacity duration-300 ${isOpen ? "opacity-100" : "opacity-0"}`}
+                />
+              </button>
+            );
+          })}
+        </div>
       </div>
-    </div>
+    </>
   );
 }

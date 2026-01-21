@@ -22,22 +22,32 @@ export default function WindowFrame({
     bringToFront,
     updateWindowPosition,
     closeWindow,
+    minimizeWindow,
     activeWindow,
   } = useSystemStore();
   const winState = windows[id];
   const frameRef = useRef<HTMLDivElement>(null);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   // Drag State
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
 
-  if (!winState.isOpen) return null;
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  if (!winState.isOpen || winState.isMinimized) return null;
 
   const handleMouseDown = (e: React.MouseEvent) => {
+    if (isMobile) return; // No dragging on mobile
     bringToFront(id);
     if (frameRef.current) {
-      setIsDragging(true);
+      // Only drag if clicking the header
       const rect = frameRef.current.getBoundingClientRect();
+      setIsDragging(true);
       setDragOffset({
         x: e.clientX - rect.left,
         y: e.clientY - rect.top,
@@ -45,8 +55,9 @@ export default function WindowFrame({
     }
   };
 
-  // Global Mouse Move Listener
   useEffect(() => {
+    if (isMobile) return;
+
     const handleMouseMove = (e: MouseEvent) => {
       if (isDragging) {
         const newX = e.clientX - dragOffset.x;
@@ -54,7 +65,6 @@ export default function WindowFrame({
         updateWindowPosition(id, { x: newX, y: newY });
       }
     };
-
     const handleMouseUp = () => setIsDragging(false);
 
     if (isDragging) {
@@ -65,46 +75,63 @@ export default function WindowFrame({
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mouseup", handleMouseUp);
     };
-  }, [isDragging, dragOffset, id, updateWindowPosition]);
+  }, [isDragging, dragOffset, id, updateWindowPosition, isMobile]);
 
   const isActive = activeWindow === id;
+
+  // --- RESPONSIVE STYLES ---
+  // Mobile: Full screen, Fixed, No radius
+  // Desktop: Absolute positioned, Rounded, Shadow
+  const mobileStyle = {
+    position: "fixed" as const,
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "calc(100% - 80px)", // Leave space for Dock
+    zIndex: 1000, // Always on top of desktop elements
+  };
+
+  const desktopStyle = {
+    position: "fixed" as const,
+    left: winState.position.x,
+    top: winState.position.y,
+    width: width,
+    height: height,
+    zIndex: winState.zIndex,
+  };
 
   return (
     <div
       ref={frameRef}
-      style={{
-        left: winState.position.x,
-        top: winState.position.y,
-        zIndex: winState.zIndex,
-        width,
-        height,
-      }}
-      className={`fixed flex flex-col rounded-2xl overflow-hidden shadow-2xl transition-shadow duration-300 ${isActive ? "shadow-[0_0_40px_rgba(0,0,0,0.5)] border border-white/20" : "shadow-xl border border-white/5 opacity-90"}`}
-      onMouseDown={() => bringToFront(id)}
+      style={isMobile ? mobileStyle : desktopStyle}
+      className={`flex flex-col overflow-hidden transition-all duration-200 
+        ${isMobile ? "rounded-none bg-black" : "rounded-2xl bg-black/80 backdrop-blur-xl border border-white/10 shadow-2xl"}
+        ${isActive && !isMobile ? "shadow-[0_0_50px_rgba(0,0,0,0.5)] border-white/20" : ""}
+      `}
+      onMouseDown={() => !isMobile && bringToFront(id)}
     >
-      {/* Background Blur Layer */}
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-xl -z-10" />
-
-      {/* Title Bar (Draggable) */}
+      {/* Title Bar */}
       <div
-        onMouseDown={handleMouseDown}
-        className={`h-10 flex items-center justify-between px-4 select-none cursor-grab active:cursor-grabbing border-b border-white/5 ${isActive ? "bg-white/5" : "bg-transparent"}`}
+        onMouseDown={handleMouseDown} // Drag handle
+        className={`h-12 flex items-center justify-between px-4 select-none flex-shrink-0 
+            ${isMobile ? "bg-black border-b border-white/10 pt-safe-top" : "cursor-grab active:cursor-grabbing border-b border-white/5"}
+        `}
       >
-        <span className="text-xs font-bold tracking-widest uppercase text-slate-300">
+        <span className="text-xs font-bold tracking-[0.2em] uppercase text-slate-300">
           {title}
         </span>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <button
-            onClick={() => closeWindow(id)}
-            className="p-1 hover:bg-white/10 rounded text-slate-400 hover:text-white"
+            onClick={() => minimizeWindow(id)}
+            className="p-2 hover:bg-white/10 rounded-full text-slate-400 hover:text-white transition-colors"
           >
-            <Minus className="w-3 h-3" />
+            <Minus className="w-4 h-4" />
           </button>
           <button
             onClick={() => closeWindow(id)}
-            className="p-1 hover:bg-red-500/20 rounded text-slate-400 hover:text-red-400"
+            className="p-2 hover:bg-red-500/20 rounded-full text-slate-400 hover:text-red-400 transition-colors"
           >
-            <X className="w-3 h-3" />
+            <X className="w-4 h-4" />
           </button>
         </div>
       </div>

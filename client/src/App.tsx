@@ -34,11 +34,6 @@ function Dashboard() {
   const [showProfile, setShowProfile] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Initial Briefing (Optional on boot)
-  useEffect(() => {
-    // We could auto-run diagnostics here
-  }, []);
-
   const handleBriefing = async () => {
     setIsProcessing(true);
     setBriefing("CONNECTING...");
@@ -55,27 +50,26 @@ function Dashboard() {
     <div
       className={`h-screen w-screen overflow-hidden font-sans theme-${theme} bg-black text-slate-200 relative`}
     >
-      {/* --- DESKTOP LAYER --- */}
-
-      {/* 1. Wallpaper & Core */}
+      {/* --- LAYER 0: WALLPAPER & CORE --- */}
       <div className="absolute inset-0 z-0 flex items-center justify-center pointer-events-none">
-        <div className="w-[800px] h-[800px] opacity-60">
+        <div className="w-[120vw] h-[120vw] md:w-[800px] md:h-[800px] opacity-60">
           <Suspense fallback={null}>
             <CoreScene />
           </Suspense>
         </div>
       </div>
 
-      {/* 2. Desktop Widgets (Fixed positions) */}
-      <div className="absolute top-6 left-6 z-10">
-        <div className="glass-panel p-4 w-64">
+      {/* --- LAYER 1: DESKTOP WIDGETS --- */}
+      {/* Neural Core (Top Left) */}
+      <div className="absolute top-6 left-6 z-10 w-48 md:w-64">
+        <div className="bg-black/30 backdrop-blur-md border border-white/10 rounded-xl p-4 transition-all hover:bg-black/40">
           <h2 className="text-[10px] font-bold tracking-widest text-blue-400 mb-2 uppercase">
             Neural Core
           </h2>
           <button
             onClick={handleBriefing}
             disabled={isProcessing}
-            className="os-btn os-btn-primary w-full text-[10px]"
+            className="w-full py-2 bg-blue-500/20 border border-blue-500/50 rounded-lg text-blue-300 text-[10px] font-bold uppercase tracking-wider hover:bg-blue-500/30 transition-all flex items-center justify-center gap-2"
           >
             {isProcessing ? (
               <Loader2 className="w-3 h-3 animate-spin" />
@@ -84,20 +78,37 @@ function Dashboard() {
             )}
           </button>
           {briefing && (
-            <div className="mt-3 p-2 bg-black/40 rounded text-[10px] font-mono text-slate-300 max-h-40 overflow-y-auto">
+            <div className="mt-3 p-2 bg-black/40 rounded text-[10px] font-mono text-slate-300 max-h-32 overflow-y-auto custom-scrollbar">
+              <span className="text-blue-500 mr-2">{">>"}</span>
               {briefing}
             </div>
           )}
         </div>
       </div>
 
-      <div className="absolute top-6 right-6 z-10 w-48">
-        <Suspense fallback={null}>
-          <DaemonPet />
-        </Suspense>
+      {/* Profile (Top Right) */}
+      <div className="absolute top-6 right-6 z-10 flex flex-col items-end gap-4">
+        <button
+          onClick={() => setShowProfile(true)}
+          className="group flex items-center gap-3 bg-black/30 backdrop-blur-md border border-white/10 pl-4 pr-1 py-1 rounded-full hover:bg-black/50 transition-all"
+        >
+          <span className="text-xs font-bold text-slate-300 uppercase tracking-wider hidden md:block">
+            System Admin
+          </span>
+          <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 to-violet-500 flex items-center justify-center text-xs font-bold text-white shadow-lg group-hover:scale-105 transition-transform">
+            {session.user.email?.[0].toUpperCase()}
+          </div>
+        </button>
+
+        {/* Pet Widget */}
+        <div className="w-40 hidden md:block">
+          <Suspense fallback={null}>
+            <DaemonPet />
+          </Suspense>
+        </div>
       </div>
 
-      {/* --- WINDOW MANAGER LAYER --- */}
+      {/* --- LAYER 2: WINDOW MANAGER --- */}
       <div className="absolute inset-0 z-20 pointer-events-none [&>*]:pointer-events-auto">
         {/* Productivity */}
         <WindowFrame
@@ -202,7 +213,7 @@ function Dashboard() {
         </WindowFrame>
       </div>
 
-      {/* --- UI OVERLAYS --- */}
+      {/* --- LAYER 3: GLOBAL OVERLAYS --- */}
       <Dock />
       <OmniCommand />
       <VoiceCommand />
