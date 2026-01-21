@@ -22,9 +22,8 @@ def get_files(parent_id: Optional[str] = None, db = Depends(get_authenticated_db
 
 @router.post("/")
 def create_file(file: FileCreate, db = Depends(get_authenticated_db)):
-    user = db.auth.get_user()
     data = {
-        "user_id": user.user.id,
+        "user_id": db.user_id,
         "parent_id": file.parent_id,
         "name": file.name,
         "type": file.type,

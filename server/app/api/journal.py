@@ -6,6 +6,7 @@ router = APIRouter()
 
 class EntryCreate(BaseModel):
     content: str
+    mood: str = "neutral"
 
 @router.get("/")
 def get_entries(db = Depends(get_authenticated_db)):
@@ -13,8 +14,7 @@ def get_entries(db = Depends(get_authenticated_db)):
 
 @router.post("/")
 def create_entry(entry: EntryCreate, db = Depends(get_authenticated_db)):
-    user = db.auth.get_user()
-    data = {"content": entry.content, "user_id": user.user.id}
+    data = {"content": entry.content, "mood": entry.mood, "user_id": db.user_id}
     return db.table("journal_entries").insert(data).execute().data[0]
 
 @router.delete("/{entry_id}")

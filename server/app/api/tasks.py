@@ -17,8 +17,8 @@ def get_tasks(db = Depends(get_authenticated_db)):
 
 @router.post("/")
 def create_task(task: TaskCreate, db = Depends(get_authenticated_db)):
-    user = db.auth.get_user()
-    data = {"title": task.title, "user_id": user.user.id, "status": "todo"}
+    # FIX: Use the pre-validated user_id attached to db
+    data = {"title": task.title, "user_id": db.user_id, "status": "todo"}
     return db.table("tasks").insert(data).execute().data[0]
 
 @router.patch("/{task_id}")

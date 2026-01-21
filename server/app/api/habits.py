@@ -13,8 +13,7 @@ def get_habits(db = Depends(get_authenticated_db)):
 
 @router.post("/")
 def create_habit(habit: HabitCreate, db = Depends(get_authenticated_db)):
-    user = db.auth.get_user()
-    data = {"title": habit.title, "user_id": user.user.id, "streak": 0}
+    data = {"title": habit.title, "user_id": db.user_id, "streak": 0}
     return db.table("habits").insert(data).execute().data[0]
 
 @router.patch("/{habit_id}/increment")

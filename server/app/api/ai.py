@@ -12,16 +12,15 @@ except:
     client = None
 
 class AIRequest(BaseModel):
-    prompt: str
-    context_type: str = "general"
+    command: str
 
 def ask_nexus_ai(prompt: str, context: dict) -> str:
-    if not client: return "AI Core Offline: Missing API Key"
+    if not client: return "AI Offline: Check API Key."
     
     system = f"""
     You are NEXUS OS. 
-    [SYSTEM CONTEXT]: {str(context)}
-    Respond as a high-tech operating system interface.
+    [CONTEXT]: {str(context)}
+    Be concise, helpful, and act as the OS interface.
     """
     try:
         completion = client.chat.completions.create(
@@ -34,14 +33,20 @@ def ask_nexus_ai(prompt: str, context: dict) -> str:
         return f"AI Error: {str(e)}"
 
 @router.post("/command")
-def process_voice_command(req: dict, db = Depends(get_authenticated_db)):
-    # Simple context gathering
-    context = {"status": "User is active"}
-    return {"response": ask_nexus_ai(req.get("command", ""), context)}
+def process_command(req: AIRequest, db = Depends(get_authenticated_db)):
+    # Gather Context
+    tasks = db.table("tasks").select("title, status").limit(5).execute().data
+    files = db.table("files").select("name").limit(5).execute().data
+    
+    context = {
+        "user_id": db.user_id,
+        "recent_tasks": tasks,
+        "files": files
+    }
+    
+    return {"response": ask_nexus_ai(req.command, context)}
 
 @router.get("/briefing")
 def get_briefing(db = Depends(get_authenticated_db)):
-    # Gather minimal context for briefing
     tasks = db.table("tasks").select("title").limit(5).execute().data
-    context = {"pending_tasks": tasks}
-    return {"message": ask_nexus_ai("Give me a system briefing.", context)}
+    return {"message": ask_nexus_ai("Give me a short status briefing.", {"tasks": tasks})}

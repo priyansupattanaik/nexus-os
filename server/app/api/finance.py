@@ -15,8 +15,7 @@ def get_transactions(db = Depends(get_authenticated_db)):
 
 @router.post("/")
 def add_transaction(txn: TransactionCreate, db = Depends(get_authenticated_db)):
-    user = db.auth.get_user()
-    data = {**txn.dict(), "user_id": user.user.id}
+    data = {**txn.dict(), "user_id": db.user_id}
     return db.table("transactions").insert(data).execute().data[0]
 
 @router.delete("/{txn_id}")
