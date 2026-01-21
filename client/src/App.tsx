@@ -1,10 +1,12 @@
 import { AuthProvider, useAuth } from "@/lib/auth";
 import Login from "@/components/Login";
 import { useState, Suspense, lazy } from "react";
+import { useSystemStore } from "@/lib/store";
 import Sidebar from "@/components/Sidebar";
 import VoiceCommand from "@/components/VoiceCommand";
 import ProfileModule from "@/components/ProfileModule";
-import { Loader2 } from "lucide-react";
+import ContextMenu from "@/components/ContextMenu";
+import { Loader2, Menu } from "lucide-react";
 
 // Lazy Load Modules
 const TasksModule = lazy(() => import("@/components/TasksModule"));
@@ -17,19 +19,21 @@ const Overclock = lazy(() => import("@/components/Overclock"));
 const FrequencyTuner = lazy(() => import("@/components/FrequencyTuner"));
 const DaemonPet = lazy(() => import("@/components/DaemonPet"));
 const DreamDecoder = lazy(() => import("@/components/DreamDecoder"));
-const ExplorerModule = lazy(() => import("@/components/ExplorerModule")); // <<< NEW
-const SettingsModule = lazy(() => import("@/components/SettingsModule")); // <<< NEW
+const ExplorerModule = lazy(() => import("@/components/ExplorerModule"));
+const SettingsModule = lazy(() => import("@/components/SettingsModule"));
+const TerminalModule = lazy(() => import("@/components/TerminalModule")); // <<< NEW
 
 function Dashboard() {
   const { session } = useAuth();
-  const [activeTab, setActiveTab] = useState("dashboard");
+  const { activeTab } = useSystemStore(); // Global Navigation
   const [showProfile, setShowProfile] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const renderContent = () => {
     switch (activeTab) {
       case "dashboard":
         return (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 pb-20 md:pb-0">
             <div className="xl:col-span-2 h-96">
               <Suspense fallback={<LoadingCard />}>
                 <TasksModule />
@@ -59,7 +63,7 @@ function Dashboard() {
         );
       case "explorer":
         return (
-          <div className="h-full">
+          <div className="h-full pb-20 md:pb-0">
             <Suspense fallback={<LoadingCard />}>
               <ExplorerModule />
             </Suspense>
@@ -67,15 +71,23 @@ function Dashboard() {
         );
       case "settings":
         return (
-          <div className="h-full">
+          <div className="h-full pb-20 md:pb-0">
             <Suspense fallback={<LoadingCard />}>
               <SettingsModule />
             </Suspense>
           </div>
         );
+      case "terminal":
+        return (
+          <div className="h-full max-w-3xl mx-auto pb-20 md:pb-0">
+            <Suspense fallback={<LoadingCard />}>
+              <TerminalModule />
+            </Suspense>
+          </div>
+        );
       case "tasks":
         return (
-          <div className="h-full">
+          <div className="h-full pb-20 md:pb-0">
             <Suspense fallback={<LoadingCard />}>
               <TasksModule />
             </Suspense>
@@ -83,7 +95,7 @@ function Dashboard() {
         );
       case "finance":
         return (
-          <div className="max-w-4xl mx-auto">
+          <div className="max-w-4xl mx-auto pb-20 md:pb-0">
             <Suspense fallback={<LoadingCard />}>
               <FinanceModule />
             </Suspense>
@@ -91,7 +103,7 @@ function Dashboard() {
         );
       case "habits":
         return (
-          <div className="max-w-4xl mx-auto">
+          <div className="max-w-4xl mx-auto pb-20 md:pb-0">
             <Suspense fallback={<LoadingCard />}>
               <HabitsModule />
             </Suspense>
@@ -99,7 +111,7 @@ function Dashboard() {
         );
       case "journal":
         return (
-          <div className="h-full">
+          <div className="h-full pb-20 md:pb-0">
             <Suspense fallback={<LoadingCard />}>
               <JournalModule />
             </Suspense>
@@ -107,7 +119,7 @@ function Dashboard() {
         );
       case "bio":
         return (
-          <div className="max-w-2xl mx-auto mt-10 h-96">
+          <div className="max-w-2xl mx-auto mt-10 h-96 pb-20 md:pb-0">
             <Suspense fallback={<LoadingCard />}>
               <BioRegulator />
             </Suspense>
@@ -115,7 +127,7 @@ function Dashboard() {
         );
       case "focus":
         return (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-20 md:pb-0">
             <div className="h-96">
               <Suspense fallback={<LoadingCard />}>
                 <Overclock />
@@ -130,7 +142,7 @@ function Dashboard() {
         );
       case "analysis":
         return (
-          <div className="max-w-3xl mx-auto h-[500px]">
+          <div className="max-w-3xl mx-auto h-[500px] pb-20 md:pb-0">
             <Suspense fallback={<LoadingCard />}>
               <DreamDecoder />
             </Suspense>
@@ -142,12 +154,27 @@ function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--bg-main)] font-sans flex">
-      <Sidebar
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        onOpenProfile={() => setShowProfile(true)}
-      />
+    <div className="min-h-screen bg-[var(--bg-main)] font-sans flex overflow-hidden">
+      <ContextMenu />
+
+      {/* Desktop Sidebar */}
+      <Sidebar onOpenProfile={() => setShowProfile(true)} />
+
+      {/* Mobile Menu Overlay */}
+      {mobileMenuOpen && (
+        <div
+          className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm md:hidden"
+          onClick={() => setMobileMenuOpen(false)}
+        >
+          <div
+            className="w-64 h-full bg-white animate-in slide-in-from-left"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Sidebar onOpenProfile={() => setShowProfile(true)} />
+          </div>
+        </div>
+      )}
+
       {showProfile && (
         <ProfileModule
           user={session.user}
@@ -155,15 +182,25 @@ function Dashboard() {
         />
       )}
 
-      <main className="flex-1 ml-64 p-8 overflow-y-auto h-screen">
+      <main className="flex-1 md:ml-64 p-4 md:p-8 overflow-y-auto h-screen relative">
         <header className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 capitalize">
-              {activeTab.replace("-", " ")}
-            </h1>
-            <p className="text-sm text-gray-500">
-              System Operational • All Systems Green
-            </p>
+          <div className="flex items-center gap-3">
+            {/* Mobile Toggle */}
+            <button
+              onClick={() => setMobileMenuOpen(true)}
+              className="md:hidden p-2 bg-white rounded-lg border border-gray-200 text-gray-600"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900 capitalize">
+                {activeTab.replace("-", " ")}
+              </h1>
+              <p className="text-sm text-gray-500 hidden md:block">
+                System Operational • All Systems Green
+              </p>
+            </div>
           </div>
           <VoiceCommand />
         </header>

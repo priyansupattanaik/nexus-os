@@ -1,3 +1,4 @@
+import { useSystemStore, AppID } from "@/lib/store";
 import {
   CheckSquare,
   DollarSign,
@@ -9,34 +10,32 @@ import {
   LayoutDashboard,
   HardDrive,
   Settings as SettingsIcon,
+  Terminal,
 } from "lucide-react";
 
 interface SidebarProps {
-  activeTab: string;
-  setActiveTab: (tab: string) => void;
   onOpenProfile: () => void;
 }
 
-export default function Sidebar({
-  activeTab,
-  setActiveTab,
-  onOpenProfile,
-}: SidebarProps) {
-  const menuItems = [
+export default function Sidebar({ onOpenProfile }: SidebarProps) {
+  const { activeTab, setActiveTab } = useSystemStore();
+
+  const menuItems: { id: AppID; label: string; icon: any }[] = [
     { id: "dashboard", label: "Overview", icon: LayoutDashboard },
-    { id: "explorer", label: "Explorer", icon: HardDrive }, // <<< NEW
+    { id: "explorer", label: "Explorer", icon: HardDrive },
     { id: "tasks", label: "Tasks", icon: CheckSquare },
     { id: "finance", label: "Finance", icon: DollarSign },
     { id: "habits", label: "Habits", icon: Repeat },
     { id: "journal", label: "Journal", icon: Book },
+    { id: "terminal", label: "Terminal", icon: Terminal }, // <<< NEW
     { id: "bio", label: "Bio-Sync", icon: HeartPulse },
     { id: "focus", label: "Focus Lab", icon: Timer },
     { id: "analysis", label: "Neural", icon: BrainCircuit },
-    { id: "settings", label: "Settings", icon: SettingsIcon }, // <<< NEW
+    { id: "settings", label: "Settings", icon: SettingsIcon },
   ];
 
   return (
-    <div className="w-64 h-screen fixed left-0 top-0 bg-white border-r border-gray-200 flex flex-col z-50">
+    <div className="w-64 h-screen fixed left-0 top-0 bg-white border-r border-gray-200 flex flex-col z-50 hidden md:flex">
       {/* Brand */}
       <div className="h-20 flex items-center px-8 border-b border-gray-100">
         <div className="w-8 h-8 rounded-lg bg-[var(--accent)] flex items-center justify-center text-white font-bold mr-3 shadow-lg shadow-sky-500/30">
