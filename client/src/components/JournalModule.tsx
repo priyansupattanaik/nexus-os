@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/lib/auth";
 import { fetchJournal, createEntry, deleteEntry } from "@/lib/api";
 import { useSystemStore } from "@/lib/store";
-import { Mic, MicOff, Send, Trash2 } from "lucide-react";
+import { Mic, MicOff, Send, Trash2, Book } from "lucide-react";
 
 export default function JournalModule() {
   const { session } = useAuth();
@@ -59,18 +59,24 @@ export default function JournalModule() {
   };
 
   return (
-    <div className="flex flex-col h-full p-4 gap-4 bg-black/20">
-      <div className="flex gap-2">
+    <div className="zenith-card h-full flex flex-col p-6 overflow-hidden">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2">
+          <Book className="w-4 h-4" /> Personal Log
+        </h2>
+      </div>
+
+      <div className="flex gap-3 mb-6">
         <div className="relative flex-1">
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder="Log entry..."
-            className="os-input w-full min-h-[80px] resize-none pr-8"
+            placeholder="Record your thoughts..."
+            className="zenith-input w-full min-h-[100px] resize-none pr-10 leading-relaxed text-gray-700"
           />
           <button
             onClick={toggleRecord}
-            className={`absolute bottom-2 right-2 p-1.5 rounded-full transition-all ${isRecording ? "text-red-500 animate-pulse" : "text-slate-400 hover:text-white"}`}
+            className={`absolute bottom-3 right-3 p-2 rounded-lg transition-all ${isRecording ? "bg-rose-50 text-rose-500 animate-pulse" : "text-gray-400 hover:text-gray-600 hover:bg-gray-100"}`}
           >
             {isRecording ? (
               <MicOff className="w-4 h-4" />
@@ -81,37 +87,45 @@ export default function JournalModule() {
         </div>
         <button
           onClick={handlePost}
-          className="os-btn os-btn-primary px-3 self-end h-[80px]"
+          className="zenith-btn zenith-btn-primary px-4 self-end h-[100px] flex flex-col items-center justify-center gap-2"
         >
-          <Send className="w-4 h-4" />
+          <Send className="w-5 h-5" />
+          <span className="text-[10px] uppercase font-bold">Log</span>
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto pr-1 space-y-3 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto pr-2 space-y-4 custom-scrollbar">
         {entries.map((e) => (
           <div
             key={e.id}
-            className="p-3 bg-white/5 border border-white/5 rounded-lg relative group hover:bg-white/10 transition-all"
+            className="p-5 bg-gray-50 border border-gray-100 rounded-xl relative group hover:bg-white hover:shadow-md transition-all"
           >
-            <p className="text-xs text-slate-300 font-medium whitespace-pre-wrap leading-relaxed">
+            <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
               {e.content}
             </p>
-            <div className="flex justify-between items-center mt-2 pt-2 border-t border-white/5">
-              <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">
-                {new Date(e.created_at).toLocaleDateString()}
+            <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-200">
+              <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">
+                {new Date(e.created_at).toLocaleDateString()} •{" "}
+                {new Date(e.created_at).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
               </span>
               <button
                 onClick={async () => {
                   await deleteEntry(e.id, session.access_token);
                   loadData();
                 }}
-                className="text-slate-500 hover:text-rose-400 opacity-0 group-hover:opacity-100 transition-all"
+                className="text-gray-300 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-all"
               >
-                <Trash2 className="w-3 h-3" />
+                <Trash2 className="w-4 h-4" />
               </button>
             </div>
           </div>
         ))}
+        {entries.length === 0 && (
+          <p className="text-center text-gray-400 text-sm mt-4">Log is empty</p>
+        )}
       </div>
     </div>
   );

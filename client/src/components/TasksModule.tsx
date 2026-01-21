@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth";
 import { fetchTasks, createTask, updateTask, deleteTask } from "@/lib/api";
 import { useSystemStore } from "@/lib/store";
-import { Plus, Trash2, GripVertical } from "lucide-react";
+import { Plus, Trash2, GripVertical, CheckSquare } from "lucide-react";
 
 type Task = {
   id: string;
@@ -93,14 +93,14 @@ export default function TasksModule() {
     <div
       onDrop={(e) => onDrop(e, status)}
       onDragOver={allowDrop}
-      className="flex-1 min-w-[140px] flex flex-col bg-white/5 rounded-xl p-2 transition-colors border border-white/5"
+      className="flex-1 min-w-[200px] flex flex-col bg-gray-50 rounded-xl p-3 border border-gray-100"
     >
       <div
-        className={`mb-2 text-[10px] font-bold uppercase tracking-widest text-${color}-400 text-center select-none opacity-80`}
+        className={`mb-3 text-xs font-bold uppercase tracking-widest text-${color}-600 text-center select-none`}
       >
         {title}
       </div>
-      <div className="flex-1 space-y-2 overflow-y-auto custom-scrollbar pr-1">
+      <div className="flex-1 space-y-3 overflow-y-auto custom-scrollbar">
         {tasks
           .filter((t) => t.status === status)
           .map((t) => (
@@ -108,17 +108,17 @@ export default function TasksModule() {
               key={t.id}
               draggable
               onDragStart={(e) => onDragStart(e, t.id)}
-              className="p-2 bg-black/40 border border-white/5 rounded-lg cursor-grab active:cursor-grabbing group relative flex items-start gap-2 shadow-sm hover:bg-white/10"
+              className="p-3 bg-white border border-gray-200 rounded-lg shadow-sm cursor-grab active:cursor-grabbing group relative flex items-start gap-2 hover:shadow-md transition-all"
             >
-              <GripVertical className="w-3 h-3 text-slate-600 mt-0.5 flex-shrink-0" />
-              <p className="text-xs font-medium text-slate-200 leading-snug flex-1">
+              <GripVertical className="w-4 h-4 text-gray-300 mt-0.5 flex-shrink-0" />
+              <p className="text-sm font-medium text-gray-700 leading-snug flex-1">
                 {t.title}
               </p>
               <button
                 onClick={() => handleDelete(t.id)}
-                className="text-slate-500 hover:text-rose-400 opacity-0 group-hover:opacity-100"
+                className="text-gray-300 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-opacity"
               >
-                <Trash2 className="w-3 h-3" />
+                <Trash2 className="w-4 h-4" />
               </button>
             </div>
           ))}
@@ -127,23 +127,29 @@ export default function TasksModule() {
   );
 
   return (
-    <div className="flex flex-col h-full p-4 gap-4 bg-black/20">
-      <form onSubmit={handleAddTask} className="flex gap-2">
+    <div className="zenith-card h-full flex flex-col p-6 overflow-hidden">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2">
+          <CheckSquare className="w-4 h-4" /> Mission Control
+        </h2>
+      </div>
+
+      <form onSubmit={handleAddTask} className="flex gap-3 mb-6">
         <input
           value={newTask}
           onChange={(e) => setNewTask(e.target.value)}
-          placeholder="New Task..."
-          className="os-input flex-1"
+          placeholder="New Objective..."
+          className="zenith-input flex-1"
         />
-        <button type="submit" className="os-btn os-btn-primary px-3">
-          <Plus className="w-4 h-4" />
+        <button type="submit" className="zenith-btn zenith-btn-primary px-4">
+          <Plus className="w-5 h-5" />
         </button>
       </form>
 
-      <div className="flex-1 flex gap-2 overflow-x-auto pb-2">
-        <Column title="To Do" status="todo" color="slate" />
-        <Column title="Active" status="in_progress" color="blue" />
-        <Column title="Done" status="done" color="emerald" />
+      <div className="flex-1 flex gap-4 overflow-x-auto pb-2">
+        <Column title="Pending" status="todo" color="gray" />
+        <Column title="In Progress" status="in_progress" color="sky" />
+        <Column title="Complete" status="done" color="emerald" />
       </div>
     </div>
   );

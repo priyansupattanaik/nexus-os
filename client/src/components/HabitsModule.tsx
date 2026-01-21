@@ -7,7 +7,7 @@ import {
   deleteHabit,
 } from "@/lib/api";
 import { useSystemStore } from "@/lib/store";
-import { Plus, Trash2, Flame } from "lucide-react";
+import { Plus, Trash2, Flame, Repeat } from "lucide-react";
 
 export default function HabitsModule() {
   const { session } = useAuth();
@@ -40,36 +40,42 @@ export default function HabitsModule() {
   };
 
   return (
-    <div className="flex flex-col h-full p-4 gap-4 bg-black/20">
-      <form onSubmit={handleAdd} className="flex gap-2">
+    <div className="zenith-card h-full flex flex-col p-6 overflow-hidden">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2">
+          <Repeat className="w-4 h-4" /> Protocols
+        </h2>
+      </div>
+
+      <form onSubmit={handleAdd} className="flex gap-3 mb-6">
         <input
           value={newHabit}
           onChange={(e) => setNewHabit(e.target.value)}
-          placeholder="New Habit..."
-          className="os-input flex-1"
+          placeholder="Establish new protocol..."
+          className="zenith-input flex-1"
         />
-        <button type="submit" className="os-btn os-btn-primary px-3">
-          <Plus className="w-4 h-4" />
+        <button type="submit" className="zenith-btn zenith-btn-primary px-4">
+          <Plus className="w-5 h-5" />
         </button>
       </form>
 
-      <div className="flex-1 overflow-y-auto pr-1 space-y-2 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto pr-2 space-y-3 custom-scrollbar">
         {habits.map((h) => (
           <div
             key={h.id}
-            className="flex items-center justify-between p-3 bg-white/5 border border-white/5 rounded-lg hover:border-white/10 transition-all group"
+            className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-xl hover:shadow-md transition-all group"
           >
-            <span className="text-sm font-medium text-slate-200">
+            <span className="text-sm font-semibold text-gray-800">
               {h.title}
             </span>
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1 text-amber-400 bg-amber-400/10 border border-amber-400/20 px-2 py-0.5 rounded text-[10px]">
-                <Flame className="w-3 h-3" />
-                <span className="font-bold">{h.streak}</span>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1.5 bg-sky-50 text-[var(--accent)] border border-sky-100 px-3 py-1 rounded-full">
+                <Flame className="w-4 h-4" />
+                <span className="text-sm font-bold">{h.streak}</span>
               </div>
               <button
                 onClick={() => handleIncrement(h.id)}
-                className="os-btn px-2 py-1 text-xs hover:bg-blue-500 hover:text-white transition-colors"
+                className="zenith-btn px-3 py-1.5 text-xs hover:bg-[var(--accent)] hover:text-white transition-colors"
               >
                 +
               </button>
@@ -78,13 +84,18 @@ export default function HabitsModule() {
                   await deleteHabit(h.id, session.access_token);
                   loadHabits();
                 }}
-                className="text-slate-500 hover:text-rose-400 opacity-0 group-hover:opacity-100 transition-all"
+                className="text-gray-300 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-all"
               >
-                <Trash2 className="w-3 h-3" />
+                <Trash2 className="w-4 h-4" />
               </button>
             </div>
           </div>
         ))}
+        {habits.length === 0 && (
+          <p className="text-center text-gray-400 text-sm mt-4">
+            No active protocols
+          </p>
+        )}
       </div>
     </div>
   );
