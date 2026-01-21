@@ -4,32 +4,32 @@ from app.core.config import settings
 
 def get_authenticated_db(authorization: str = Header(...)) -> Client:
     """
-    Creates a secure, user-locked Supabase client.
-    Extracts the user ID immediately to prevent "Nothing Saved" errors.
+    Creates a secure, user-locked client.
+    Attaches 'user_id' directly to the client for data integrity.
     """
-    if not authorization:
-        raise HTTPException(status_code=401, detail="Missing Token")
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Unauthorized: No Security Token")
     
     try:
         token = authorization.replace("Bearer ", "")
         
-        # 1. Initialize client with user token to bypass/obey RLS correctly
+        # Initialize client with user token to obey RLS
         client = create_client(
             settings.SUPABASE_URL, 
             settings.SUPABASE_KEY,
             options={'headers': {'Authorization': f'Bearer {token}'}}
         )
         
-        # 2. Explicitly fetch the user to verify the token is alive
+        # Verify user and cache the ID
         user_response = client.auth.get_user(token)
         if not user_response or not user_response.user:
-            raise HTTPException(status_code=401, detail="Session Expired")
+            raise HTTPException(status_code=401, detail="Session Invalid")
             
-        # 3. ATTACH DATA DIRECTLY TO CLIENT (This fixes the "tasks" bug)
+        # Hardwire the User ID into the client for route access
         client.user_id = user_response.user.id
-        client.user_email = user_response.user.email
+        client.user = user_response.user
         
         return client
     except Exception as e:
-        print(f"Auth Critical Failure: {str(e)}")
-        raise HTTPException(status_code=401, detail="Invalid Security Token")
+        print(f"CRITICAL AUTH FAILURE: {str(e)}")
+        raise HTTPException(status_code=401, detail="Handshake Failed")
