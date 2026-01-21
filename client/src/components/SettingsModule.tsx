@@ -11,6 +11,7 @@ import {
   LogOut,
   Check,
 } from "lucide-react";
+import DebugConsole from "@/components/DebugConsole"; // <<< NEW
 
 export default function SettingsModule() {
   const { session, signOut } = useAuth();
@@ -22,10 +23,10 @@ export default function SettingsModule() {
   });
 
   const THEMES: { id: ThemeColor; color: string }[] = [
-    { id: "cyan", color: "#06b6d4" }, // Cyan-500
-    { id: "violet", color: "#8b5cf6" }, // Violet-500
-    { id: "crimson", color: "#f43f5e" }, // Rose-500
-    { id: "amber", color: "#f59e0b" }, // Amber-500
+    { id: "cyan", color: "#06b6d4" },
+    { id: "violet", color: "#8b5cf6" },
+    { id: "crimson", color: "#f43f5e" },
+    { id: "amber", color: "#f59e0b" },
   ];
 
   useEffect(() => {
@@ -44,8 +45,6 @@ export default function SettingsModule() {
   const handleSave = async (key: string, value: any) => {
     setPreferences((prev) => ({ ...prev, [key]: value }));
     if (key === "accent") setTheme(value as ThemeColor);
-
-    // Debounce sync to server in a real app, direct update here
     await updateSettings(
       {
         [key === "volume"
@@ -59,9 +58,9 @@ export default function SettingsModule() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+    <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 pb-20">
       {/* Sidebar */}
-      <div className="col-span-1 space-y-2">
+      <div className="col-span-1 space-y-4">
         <div className="zenith-card p-6 bg-white">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-500">
@@ -78,19 +77,10 @@ export default function SettingsModule() {
             <button className="w-full text-left px-4 py-2 rounded-lg bg-gray-50 text-gray-900 font-medium text-sm border border-gray-100">
               General
             </button>
-            <button className="w-full text-left px-4 py-2 rounded-lg text-gray-500 hover:bg-gray-50 hover:text-gray-900 text-sm transition-colors">
-              Display
-            </button>
-            <button className="w-full text-left px-4 py-2 rounded-lg text-gray-500 hover:bg-gray-50 hover:text-gray-900 text-sm transition-colors">
-              Security
-            </button>
           </div>
         </div>
 
         <div className="zenith-card p-6 bg-rose-50 border-rose-100">
-          <h3 className="text-xs font-bold text-rose-700 uppercase tracking-wider mb-2">
-            Danger Zone
-          </h3>
           <button
             onClick={signOut}
             className="w-full flex items-center gap-2 text-rose-600 hover:text-rose-800 text-sm font-medium"
@@ -102,7 +92,7 @@ export default function SettingsModule() {
 
       {/* Main Content */}
       <div className="col-span-1 md:col-span-2 space-y-6">
-        {/* Appearance */}
+        {/* Visuals */}
         <div className="zenith-card p-6 bg-white">
           <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100">
             <Monitor className="w-5 h-5 text-gray-400" />
@@ -132,63 +122,8 @@ export default function SettingsModule() {
           </div>
         </div>
 
-        {/* System */}
-        <div className="zenith-card p-6 bg-white">
-          <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100">
-            <Shield className="w-5 h-5 text-gray-400" />
-            <h3 className="text-sm font-bold text-gray-900">System Controls</h3>
-          </div>
-
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-sky-50 rounded-lg text-sky-600">
-                  <Bell className="w-4 h-4" />
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-gray-900">
-                    Notifications
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    Allow system alerts and daemon pings
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() =>
-                  handleSave("notifications", !preferences.notifications)
-                }
-                className={`w-12 h-6 rounded-full transition-colors relative ${preferences.notifications ? "bg-sky-500" : "bg-gray-200"}`}
-              >
-                <div
-                  className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all shadow-sm ${preferences.notifications ? "left-7" : "left-1"}`}
-                />
-              </button>
-            </div>
-
-            <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-emerald-50 rounded-lg text-emerald-600">
-                  <Volume2 className="w-4 h-4" />
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-gray-900">
-                    System Volume
-                  </p>
-                  <p className="text-xs text-gray-500">Global output gain</p>
-                </div>
-              </div>
-              <input
-                type="range"
-                min="0"
-                max="100"
-                value={preferences.volume}
-                onChange={(e) => handleSave("volume", parseInt(e.target.value))}
-                className="w-full h-2 bg-gray-100 rounded-lg appearance-none cursor-pointer accent-emerald-500"
-              />
-            </div>
-          </div>
-        </div>
+        {/* AI Diagnostics (NEW) */}
+        <DebugConsole />
       </div>
     </div>
   );
