@@ -3,21 +3,23 @@ import {
   DollarSign,
   Repeat,
   Book,
-  Music,
-  Zap,
   BrainCircuit,
   HeartPulse,
   Timer,
-  Radio,
   LayoutDashboard,
 } from "lucide-react";
 
 interface SidebarProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
+  onOpenProfile: () => void; // <<< Added Prop
 }
 
-export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
+export default function Sidebar({
+  activeTab,
+  setActiveTab,
+  onOpenProfile,
+}: SidebarProps) {
   const menuItems = [
     { id: "dashboard", label: "Overview", icon: LayoutDashboard },
     { id: "tasks", label: "Tasks", icon: CheckSquare },
@@ -25,8 +27,8 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
     { id: "habits", label: "Habits", icon: Repeat },
     { id: "journal", label: "Journal", icon: Book },
     { id: "bio", label: "Bio-Sync", icon: HeartPulse },
-    { id: "focus", label: "Focus Lab", icon: Timer }, // Groups Overclock, Tuner
-    { id: "analysis", label: "Neural", icon: BrainCircuit }, // Groups Dream, AI
+    { id: "focus", label: "Focus Lab", icon: Timer },
+    { id: "analysis", label: "Neural", icon: BrainCircuit },
   ];
 
   return (
@@ -64,17 +66,25 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
         })}
       </div>
 
-      {/* User Footer */}
+      {/* User Footer (Now Interactive) */}
       <div className="p-4 border-t border-gray-100">
-        <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-gray-50 border border-gray-100">
-          <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-600">
+        <button
+          onClick={onOpenProfile}
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 hover:bg-gray-100 transition-all text-left group"
+        >
+          <div className="w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center text-xs font-bold text-gray-600 group-hover:text-sky-600 group-hover:border-sky-200">
             US
           </div>
           <div className="flex flex-col">
-            <span className="text-xs font-bold text-gray-900">Admin</span>
-            <span className="text-[10px] text-gray-500">Online</span>
+            <span className="text-xs font-bold text-gray-900">
+              System Admin
+            </span>
+            <span className="text-[10px] text-gray-500 flex items-center gap-1">
+              <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full" />{" "}
+              Online
+            </span>
           </div>
-        </div>
+        </button>
       </div>
     </div>
   );

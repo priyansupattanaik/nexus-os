@@ -3,6 +3,7 @@ import Login from "@/components/Login";
 import { useState, Suspense, lazy } from "react";
 import Sidebar from "@/components/Sidebar";
 import VoiceCommand from "@/components/VoiceCommand";
+import ProfileModule from "@/components/ProfileModule"; // <<< Import
 import { Loader2 } from "lucide-react";
 
 // Lazy Load Modules
@@ -18,7 +19,9 @@ const DaemonPet = lazy(() => import("@/components/DaemonPet"));
 const DreamDecoder = lazy(() => import("@/components/DreamDecoder"));
 
 function Dashboard() {
+  const { session } = useAuth(); // Need session for Profile
   const [activeTab, setActiveTab] = useState("dashboard");
+  const [showProfile, setShowProfile] = useState(false); // <<< State
 
   const renderContent = () => {
     switch (activeTab) {
@@ -122,7 +125,20 @@ function Dashboard() {
 
   return (
     <div className="min-h-screen bg-[var(--bg-main)] font-sans flex">
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+      {/* Pass toggle handler */}
+      <Sidebar
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        onOpenProfile={() => setShowProfile(true)}
+      />
+
+      {/* Profile Modal Overlay */}
+      {showProfile && (
+        <ProfileModule
+          user={session.user}
+          onClose={() => setShowProfile(false)}
+        />
+      )}
 
       <main className="flex-1 ml-64 p-8 overflow-y-auto h-screen">
         <header className="flex justify-between items-center mb-8">
