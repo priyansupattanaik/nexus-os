@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from typing import Optional
 from app.dependencies import get_authenticated_db
@@ -13,15 +13,13 @@ class TaskUpdate(BaseModel):
 
 @router.get("/")
 def get_tasks(db = Depends(get_authenticated_db)):
-    res = db.table("tasks").select("*").order("created_at", desc=True).execute()
-    return res.data
+    return db.table("tasks").select("*").order("created_at", desc=True).execute().data
 
 @router.post("/")
 def create_task(task: TaskCreate, db = Depends(get_authenticated_db)):
     user = db.auth.get_user()
     data = {"title": task.title, "user_id": user.user.id, "status": "todo"}
-    res = db.table("tasks").insert(data).execute()
-    return res.data[0]
+    return db.table("tasks").insert(data).execute().data[0]
 
 @router.patch("/{task_id}")
 def update_task(task_id: str, updates: TaskUpdate, db = Depends(get_authenticated_db)):

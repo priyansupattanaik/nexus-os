@@ -17,8 +17,7 @@ def get_transactions(db = Depends(get_authenticated_db)):
 def add_transaction(txn: TransactionCreate, db = Depends(get_authenticated_db)):
     user = db.auth.get_user()
     data = {**txn.dict(), "user_id": user.user.id}
-    res = db.table("transactions").insert(data).execute()
-    return res.data[0]
+    return db.table("transactions").insert(data).execute().data[0]
 
 @router.delete("/{txn_id}")
 def delete_transaction(txn_id: str, db = Depends(get_authenticated_db)):

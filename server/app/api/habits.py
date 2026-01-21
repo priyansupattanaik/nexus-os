@@ -19,7 +19,6 @@ def create_habit(habit: HabitCreate, db = Depends(get_authenticated_db)):
 
 @router.patch("/{habit_id}/increment")
 def increment_habit(habit_id: str, db = Depends(get_authenticated_db)):
-    # Raw SQL increment is harder in Supabase-py without stored proc, so read-modify-write for now
     curr = db.table("habits").select("streak").eq("id", habit_id).execute().data[0]
     new_streak = curr['streak'] + 1
     db.table("habits").update({"streak": new_streak}).eq("id", habit_id).execute()
