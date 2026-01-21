@@ -27,15 +27,15 @@ export default function DaemonPet() {
 
         if (pending > 5) {
           setMood("ANXIOUS");
-          setMessage("Overload Detected");
+          setMessage("Overload Warning");
         } else if (done > 0 && Math.random() > 0.5) {
           setMood("HAPPY");
-          setMessage("Optimal Efficiency");
+          setMessage("Optimal State");
         } else {
           const hour = new Date().getHours();
           if (hour > 22 || hour < 6) {
             setMood("SLEEP");
-            setMessage("Recharging...");
+            setMessage("Recharging");
           } else {
             setMood("IDLE");
             setMessage("Standing By");
@@ -51,32 +51,32 @@ export default function DaemonPet() {
   const getIcon = () => {
     switch (mood) {
       case "HAPPY":
-        return <Smile className="w-20 h-20 text-emerald-400 animate-bounce" />;
+        return <Smile className="w-16 h-16 text-emerald-500 animate-bounce" />;
       case "ANXIOUS":
-        return <Frown className="w-20 h-20 text-rose-400 animate-pulse" />;
+        return <Frown className="w-16 h-16 text-rose-500 animate-pulse" />;
       case "SLEEP":
-        return <Moon className="w-20 h-20 text-violet-400 opacity-50" />;
+        return <Moon className="w-16 h-16 text-indigo-400 opacity-80" />;
       default:
-        return <Bot className="w-20 h-20 text-blue-400" />;
+        return <Bot className="w-16 h-16 text-slate-600" />;
     }
   };
 
   return (
-    <div className="flex flex-col items-center justify-center h-full p-4 relative overflow-hidden bg-black/20">
-      <div className="absolute inset-0 bg-blue-500/5 animate-pulse pointer-events-none" />
+    <div className="zenith-card h-full flex flex-col items-center justify-center p-6 relative overflow-hidden bg-white">
+      <div className="absolute inset-0 bg-gray-50/50 -z-10" />
 
-      <div className="z-10 mb-6 filter drop-shadow-[0_0_20px_rgba(59,130,246,0.6)] transition-all duration-500">
+      <div className="z-10 mb-6 drop-shadow-sm transition-all duration-500 bg-white p-4 rounded-full shadow-sm border border-gray-100">
         {getIcon()}
       </div>
 
-      <div className="w-full flex justify-between items-center px-4 py-3 rounded-2xl bg-black/40 border border-white/5 backdrop-blur-md z-10">
-        <div className="flex items-center gap-2 text-xs text-slate-300 font-bold uppercase tracking-wider">
-          <Activity className="w-4 h-4 text-blue-400" />
+      <div className="w-full flex justify-between items-center px-4 py-3 rounded-xl bg-gray-50 border border-gray-200">
+        <div className="flex items-center gap-2 text-xs font-bold text-gray-600 uppercase tracking-wider">
+          <Activity className="w-4 h-4 text-sky-500" />
           <span>{message}</span>
         </div>
-        <div className="flex items-center gap-2 text-xs text-slate-400 font-mono">
+        <div className="flex items-center gap-2 text-xs font-mono text-gray-500">
           <Battery
-            className={`w-4 h-4 ${battery < 20 ? "text-red-500" : "text-emerald-500"}`}
+            className={`w-4 h-4 ${battery < 20 ? "text-rose-500" : "text-emerald-500"}`}
           />
           <span>{battery.toFixed(0)}%</span>
         </div>

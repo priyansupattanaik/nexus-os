@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSystemStore } from "@/lib/store";
-import { Power } from "lucide-react";
+import { Power, HeartPulse } from "lucide-react";
 
 export default function BioRegulator() {
   const { isBioActive, setBioActive } = useSystemStore();
@@ -22,45 +22,48 @@ export default function BioRegulator() {
   }, [isBioActive]);
 
   return (
-    <div className="flex flex-col h-full p-5 items-center justify-center relative overflow-hidden bg-black/20">
+    <div className="zenith-card h-full flex flex-col p-6 items-center justify-center relative overflow-hidden bg-white">
+      <div className="absolute top-6 left-6 text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2">
+        <HeartPulse className="w-4 h-4" /> Bio-Sync
+      </div>
+
       {/* Breathing Circle */}
       <div
-        className={`absolute w-40 h-40 rounded-full border-2 transition-all duration-[4000ms] ease-in-out ${
+        className={`absolute w-48 h-48 rounded-full border-[3px] transition-all duration-[4000ms] ease-in-out ${
           isBioActive
             ? phase === "INHALE"
-              ? "scale-150 border-blue-400/50 bg-blue-400/10"
+              ? "scale-125 border-sky-300 bg-sky-50"
               : phase === "HOLD"
-                ? "scale-150 border-violet-400/50 bg-violet-400/10"
-                : "scale-75 border-emerald-400/50 bg-emerald-400/10"
-            : "scale-100 border-white/5 opacity-50"
+                ? "scale-125 border-indigo-300 bg-indigo-50"
+                : "scale-90 border-emerald-300 bg-emerald-50"
+            : "scale-100 border-gray-100 bg-gray-50"
         }`}
       />
 
       <div className="z-10 text-center mb-8">
         {isBioActive ? (
           <>
-            <div className="text-3xl font-bold text-white tracking-widest drop-shadow-lg">
+            <div className="text-3xl font-bold text-gray-800 tracking-widest">
               {phase}
             </div>
-            <div className="text-[10px] text-slate-400 mt-2 uppercase tracking-widest">
+            <div className="text-xs text-gray-500 mt-2 uppercase tracking-widest font-semibold">
               Follow the rhythm
             </div>
           </>
         ) : (
-          <div className="text-xs font-medium text-slate-500">
-            System stress detected?
+          <div className="text-sm font-medium text-gray-500">
+            Detecting stress markers.
             <br />
-            Initiate calming protocol.
+            Initiate regulation?
           </div>
         )}
       </div>
 
       <button
         onClick={() => setBioActive(!isBioActive)}
-        className={`os-btn z-10 px-8 ${isBioActive ? "os-btn-danger" : "border-white/10 hover:border-white/30"}`}
+        className={`zenith-btn z-10 px-8 ${isBioActive ? "zenith-btn-danger" : "border-gray-200 hover:border-gray-300 bg-white"}`}
       >
-        <Power className="w-3.5 h-3.5" />{" "}
-        {isBioActive ? "End Session" : "Begin"}
+        <Power className="w-4 h-4" /> {isBioActive ? "End Session" : "Start"}
       </button>
     </div>
   );

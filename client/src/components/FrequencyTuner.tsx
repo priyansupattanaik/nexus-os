@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { StopCircle, PlayCircle } from "lucide-react";
+import { StopCircle, PlayCircle, Radio } from "lucide-react";
 
 const PRESETS = [
   { name: "Deep Focus", base: 400, beat: 40 },
@@ -50,20 +50,31 @@ export default function FrequencyTuner() {
   }, []);
 
   return (
-    <div className="flex flex-col h-full p-5 gap-3 bg-black/20">
+    <div className="zenith-card h-full flex flex-col p-6 gap-4 bg-white">
+      <div className="flex items-center gap-2 border-b border-gray-100 pb-2 mb-2">
+        <Radio className="w-4 h-4 text-gray-400" />
+        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+          Binaural Tuner
+        </span>
+      </div>
+
       {PRESETS.map((p) => (
         <button
           key={p.name}
           onClick={() => (activePreset === p.name ? stop() : play(p))}
-          className={`flex items-center justify-between w-full px-4 py-4 rounded-xl border transition-all duration-300 group ${activePreset === p.name ? "bg-white text-black border-white shadow-lg shadow-white/10" : "bg-white/5 border-white/5 text-slate-400 hover:bg-white/10 hover:text-white"}`}
+          className={`flex items-center justify-between w-full px-5 py-4 rounded-xl border transition-all duration-200 group ${
+            activePreset === p.name
+              ? "bg-sky-50 border-sky-200 text-sky-700 shadow-sm"
+              : "bg-white border-gray-100 text-gray-600 hover:bg-gray-50 hover:border-gray-200"
+          }`}
         >
           <span className="text-sm font-bold uppercase tracking-wide">
             {p.name}
           </span>
           {activePreset === p.name ? (
-            <StopCircle className="w-5 h-5 text-red-500" />
+            <StopCircle className="w-5 h-5 text-rose-500" />
           ) : (
-            <PlayCircle className="w-5 h-5 opacity-50 group-hover:opacity-100" />
+            <PlayCircle className="w-5 h-5 text-gray-300 group-hover:text-sky-500" />
           )}
         </button>
       ))}
