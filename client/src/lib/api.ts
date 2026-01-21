@@ -53,11 +53,12 @@ export async function fetchTransactions(token: string) {
   return res.ok ? res.json() : [];
 }
 export async function addTransaction(data: any, token: string) {
-  await fetch(`${API_URL}/api/finance/`, {
+  const res = await fetch(`${API_URL}/api/finance/`, {
     method: "POST",
     headers: getHeaders(token),
     body: JSON.stringify(data),
   });
+  return res.json();
 }
 export async function deleteTransaction(id: string, token: string) {
   await fetch(`${API_URL}/api/finance/${id}`, {
@@ -74,11 +75,12 @@ export async function fetchHabits(token: string) {
   return res.ok ? res.json() : [];
 }
 export async function createHabit(title: string, token: string) {
-  await fetch(`${API_URL}/api/habits/`, {
+  const res = await fetch(`${API_URL}/api/habits/`, {
     method: "POST",
     headers: getHeaders(token),
     body: JSON.stringify({ title }),
   });
+  return res.json();
 }
 export async function incrementHabit(id: string, token: string) {
   await fetch(`${API_URL}/api/habits/${id}/increment`, {
@@ -101,11 +103,12 @@ export async function fetchJournal(token: string) {
   return res.ok ? res.json() : [];
 }
 export async function createEntry(content: string, token: string) {
-  await fetch(`${API_URL}/api/journal/`, {
+  const res = await fetch(`${API_URL}/api/journal/`, {
     method: "POST",
     headers: getHeaders(token),
     body: JSON.stringify({ content }),
   });
+  return res.json();
 }
 export async function deleteEntry(id: string, token: string) {
   await fetch(`${API_URL}/api/journal/${id}`, {
@@ -114,23 +117,7 @@ export async function deleteEntry(id: string, token: string) {
   });
 }
 
-// --- AI ---
-export async function getAIBriefing(token: string) {
-  const res = await fetch(`${API_URL}/api/ai/briefing`, {
-    headers: getHeaders(token),
-  });
-  return res.ok ? res.json() : { message: "AI Offline" };
-}
-export async function sendVoiceCommand(command: string, token: string) {
-  const res = await fetch(`${API_URL}/api/ai/command`, {
-    method: "POST",
-    headers: getHeaders(token),
-    body: JSON.stringify({ command }),
-  });
-  return res.json();
-}
-
-// --- EXPLORER (NEW) ---
+// --- EXPLORER ---
 export async function fetchFiles(parentId: string | null, token: string) {
   const url = parentId
     ? `${API_URL}/api/explorer/?parent_id=${parentId}`
@@ -139,27 +126,21 @@ export async function fetchFiles(parentId: string | null, token: string) {
   return res.ok ? res.json() : [];
 }
 export async function createFile(data: any, token: string) {
-  return await fetch(`${API_URL}/api/explorer/`, {
+  const res = await fetch(`${API_URL}/api/explorer/`, {
     method: "POST",
     headers: getHeaders(token),
     body: JSON.stringify(data),
   });
-}
-export async function updateFile(id: string, updates: any, token: string) {
-  return await fetch(`${API_URL}/api/explorer/${id}`, {
-    method: "PATCH",
-    headers: getHeaders(token),
-    body: JSON.stringify(updates),
-  });
+  return res.json();
 }
 export async function deleteFile(id: string, token: string) {
-  return await fetch(`${API_URL}/api/explorer/${id}`, {
+  await fetch(`${API_URL}/api/explorer/${id}`, {
     method: "DELETE",
     headers: getHeaders(token),
   });
 }
 
-// --- SETTINGS (NEW) ---
+// --- SETTINGS ---
 export async function fetchSettings(token: string) {
   const res = await fetch(`${API_URL}/api/settings/`, {
     headers: getHeaders(token),
@@ -167,9 +148,27 @@ export async function fetchSettings(token: string) {
   return res.ok ? res.json() : {};
 }
 export async function updateSettings(updates: any, token: string) {
-  return await fetch(`${API_URL}/api/settings/`, {
+  const res = await fetch(`${API_URL}/api/settings/`, {
     method: "PATCH",
     headers: getHeaders(token),
     body: JSON.stringify(updates),
   });
+  return res.json();
+}
+
+// --- AI (RE-WIRED) ---
+export async function getAIBriefing(token: string) {
+  const res = await fetch(`${API_URL}/api/ai/briefing`, {
+    headers: getHeaders(token),
+  });
+  return res.ok ? res.json() : { message: "Neural Link Offline." };
+}
+export async function sendVoiceCommand(command: string, token: string) {
+  const res = await fetch(`${API_URL}/api/ai/command`, {
+    method: "POST",
+    headers: getHeaders(token),
+    body: JSON.stringify({ command }),
+  });
+  if (!res.ok) return { response: "Uplink Failure. Check AI Module." };
+  return res.json();
 }

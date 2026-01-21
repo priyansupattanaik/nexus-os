@@ -3,36 +3,28 @@ from supabase import create_client, Client
 from app.core.config import settings
 
 def get_authenticated_db(authorization: str = Header(...)) -> Client:
-    """
-    1. Creates a Supabase client with the User's Token (for RLS).
-    2. Verifies the Token with Supabase Auth.
-    3. Attaches 'user_id' and 'user' to the client object for easy access.
-    """
     if not authorization:
-        raise HTTPException(status_code=401, detail="No Authorization Header")
+        raise HTTPException(status_code=401, detail="Unauthorized: No Token")
     
     try:
         token = authorization.replace("Bearer ", "")
         
-        # 1. Init Client with Headers (For Table RLS)
+        # Instantiate localized client for RLS bypass/enforcement
         client = create_client(
             settings.SUPABASE_URL, 
             settings.SUPABASE_KEY,
             options={'headers': {'Authorization': f'Bearer {token}'}}
         )
         
-        # 2. Explicitly Verify Token (For User ID)
-        user_response = client.auth.get_user(token)
-        
-        if not user_response or not user_response.user:
-            raise HTTPException(status_code=401, detail="Invalid Token")
+        # Verify user and cache it on the client
+        user_res = client.auth.get_user(token)
+        if not user_res or not user_res.user:
+            raise HTTPException(status_code=401, detail="Invalid Session")
             
-        # 3. Attach User Context to Client (The "Hack" that fixes everything)
-        client.user_id = user_response.user.id
-        client.user = user_response.user
+        client.user_id = user_res.user.id
+        client.user = user_res.user
         
         return client
-        
     except Exception as e:
-        print(f"Auth Critical Failure: {e}")
-        raise HTTPException(status_code=401, detail="Session Expired or Invalid")
+        print(f"CRITICAL DB CONNECT ERROR: {str(e)}")
+        raise HTTPException(status_code=500, detail="Database Connection Refused")
