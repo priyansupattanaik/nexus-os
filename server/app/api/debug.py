@@ -6,22 +6,22 @@ router = APIRouter()
 
 @router.get("/run_diagnostics")
 def run_diagnostics(db = Depends(get_authenticated_db)):
-    report = {"status": "scanning", "checks": {}}
+    report = {"checks": {}}
     
-    # 1. DB Read Check
+    # 1. Database Connection Check
     try:
-        db.table("tasks").select("id", count="exact").limit(1).execute()
-        report["checks"]["database"] = "PASS"
+        db.table("tasks").select("id").limit(1).execute()
+        report["checks"]["Database"] = "PASS"
     except Exception as e:
-        report["checks"]["database"] = f"FAIL: {str(e)}"
+        report["checks"]["Database"] = f"FAIL: {str(e)}"
 
-    # 2. Auth Context Check
+    # 2. Authentication Context Check
     if db.user_id:
-        report["checks"]["auth"] = f"PASS (User: {db.user_id[:8]}...)"
+        report["checks"]["Auth"] = f"PASS (UID: {db.user_id[:8]})"
     else:
-        report["checks"]["auth"] = "FAIL"
+        report["checks"]["Auth"] = "FAIL"
 
-    # 3. AI Connectivity
-    analysis = ask_nexus_ai(f"Analyze this system report: {str(report)}", {})
+    # 3. AI Direct-Link Check
+    analysis = ask_nexus_ai(f"System Health Check: {str(report)}", {})
     
     return {"technical_report": report, "ai_analysis": analysis}
