@@ -3,7 +3,7 @@ import Login from "@/components/Login";
 import { useState, Suspense, lazy } from "react";
 import Sidebar from "@/components/Sidebar";
 import VoiceCommand from "@/components/VoiceCommand";
-import ProfileModule from "@/components/ProfileModule"; // <<< Import
+import ProfileModule from "@/components/ProfileModule";
 import { Loader2 } from "lucide-react";
 
 // Lazy Load Modules
@@ -17,11 +17,13 @@ const Overclock = lazy(() => import("@/components/Overclock"));
 const FrequencyTuner = lazy(() => import("@/components/FrequencyTuner"));
 const DaemonPet = lazy(() => import("@/components/DaemonPet"));
 const DreamDecoder = lazy(() => import("@/components/DreamDecoder"));
+const ExplorerModule = lazy(() => import("@/components/ExplorerModule")); // <<< NEW
+const SettingsModule = lazy(() => import("@/components/SettingsModule")); // <<< NEW
 
 function Dashboard() {
-  const { session } = useAuth(); // Need session for Profile
+  const { session } = useAuth();
   const [activeTab, setActiveTab] = useState("dashboard");
-  const [showProfile, setShowProfile] = useState(false); // <<< State
+  const [showProfile, setShowProfile] = useState(false);
 
   const renderContent = () => {
     switch (activeTab) {
@@ -53,6 +55,22 @@ function Dashboard() {
                 <MusicModule />
               </Suspense>
             </div>
+          </div>
+        );
+      case "explorer":
+        return (
+          <div className="h-full">
+            <Suspense fallback={<LoadingCard />}>
+              <ExplorerModule />
+            </Suspense>
+          </div>
+        );
+      case "settings":
+        return (
+          <div className="h-full">
+            <Suspense fallback={<LoadingCard />}>
+              <SettingsModule />
+            </Suspense>
           </div>
         );
       case "tasks":
@@ -125,14 +143,11 @@ function Dashboard() {
 
   return (
     <div className="min-h-screen bg-[var(--bg-main)] font-sans flex">
-      {/* Pass toggle handler */}
       <Sidebar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         onOpenProfile={() => setShowProfile(true)}
       />
-
-      {/* Profile Modal Overlay */}
       {showProfile && (
         <ProfileModule
           user={session.user}

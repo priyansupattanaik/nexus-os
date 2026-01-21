@@ -1,148 +1,175 @@
-const API_URL = import.meta.env.VITE_API_URL || "/api";
+const API_URL = import.meta.env.VITE_API_URL;
 
-// --- System & AI ---
-export const checkSystemStatus = async () => {
+const getHeaders = (token: string) => ({
+  "Content-Type": "application/json",
+  Authorization: `Bearer ${token}`,
+});
+
+// --- CORE SYSTEM ---
+export async function checkSystemStatus() {
   try {
-    const res = await fetch(`${API_URL}/health`);
-    return res.ok ? await res.json() : { status: "offline" };
+    const res = await fetch(`${API_URL}/`);
+    return res.ok ? { status: "healthy" } : { status: "error" };
   } catch {
     return { status: "offline" };
   }
-};
+}
 
-export const getAIBriefing = async (token: string) => {
-  // <<< UPDATED: Requires Token
-  const res = await fetch(`${API_URL}/ai/briefing`, {
-    headers: { Authorization: `Bearer ${token}` }, // <<< Sends Token
+// --- TASKS ---
+export async function fetchTasks(token: string) {
+  const res = await fetch(`${API_URL}/api/tasks/`, {
+    headers: getHeaders(token),
+  });
+  if (!res.ok) throw new Error("Failed to fetch tasks");
+  return res.json();
+}
+export async function createTask(title: string, token: string) {
+  const res = await fetch(`${API_URL}/api/tasks/`, {
+    method: "POST",
+    headers: getHeaders(token),
+    body: JSON.stringify({ title }),
   });
   return res.json();
-};
+}
+export async function updateTask(id: string, updates: any, token: string) {
+  await fetch(`${API_URL}/api/tasks/${id}`, {
+    method: "PATCH",
+    headers: getHeaders(token),
+    body: JSON.stringify(updates),
+  });
+}
+export async function deleteTask(id: string, token: string) {
+  await fetch(`${API_URL}/api/tasks/${id}`, {
+    method: "DELETE",
+    headers: getHeaders(token),
+  });
+}
 
-export const sendVoiceCommand = async (command: string, token: string) => {
-  // <<< UPDATED: Requires Token
-  const res = await fetch(`${API_URL}/ai/command`, {
+// --- FINANCE ---
+export async function fetchTransactions(token: string) {
+  const res = await fetch(`${API_URL}/api/finance/`, {
+    headers: getHeaders(token),
+  });
+  return res.ok ? res.json() : [];
+}
+export async function addTransaction(data: any, token: string) {
+  await fetch(`${API_URL}/api/finance/`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
+    headers: getHeaders(token),
+    body: JSON.stringify(data),
+  });
+}
+export async function deleteTransaction(id: string, token: string) {
+  await fetch(`${API_URL}/api/finance/${id}`, {
+    method: "DELETE",
+    headers: getHeaders(token),
+  });
+}
+
+// --- HABITS ---
+export async function fetchHabits(token: string) {
+  const res = await fetch(`${API_URL}/api/habits/`, {
+    headers: getHeaders(token),
+  });
+  return res.ok ? res.json() : [];
+}
+export async function createHabit(title: string, token: string) {
+  await fetch(`${API_URL}/api/habits/`, {
+    method: "POST",
+    headers: getHeaders(token),
+    body: JSON.stringify({ title }),
+  });
+}
+export async function incrementHabit(id: string, token: string) {
+  await fetch(`${API_URL}/api/habits/${id}/increment`, {
+    method: "PATCH",
+    headers: getHeaders(token),
+  });
+}
+export async function deleteHabit(id: string, token: string) {
+  await fetch(`${API_URL}/api/habits/${id}`, {
+    method: "DELETE",
+    headers: getHeaders(token),
+  });
+}
+
+// --- JOURNAL ---
+export async function fetchJournal(token: string) {
+  const res = await fetch(`${API_URL}/api/journal/`, {
+    headers: getHeaders(token),
+  });
+  return res.ok ? res.json() : [];
+}
+export async function createEntry(content: string, token: string) {
+  await fetch(`${API_URL}/api/journal/`, {
+    method: "POST",
+    headers: getHeaders(token),
+    body: JSON.stringify({ content }),
+  });
+}
+export async function deleteEntry(id: string, token: string) {
+  await fetch(`${API_URL}/api/journal/${id}`, {
+    method: "DELETE",
+    headers: getHeaders(token),
+  });
+}
+
+// --- AI ---
+export async function getAIBriefing(token: string) {
+  const res = await fetch(`${API_URL}/api/ai/briefing`, {
+    headers: getHeaders(token),
+  });
+  return res.ok ? res.json() : { message: "AI Offline" };
+}
+export async function sendVoiceCommand(command: string, token: string) {
+  const res = await fetch(`${API_URL}/api/ai/command`, {
+    method: "POST",
+    headers: getHeaders(token),
     body: JSON.stringify({ command }),
   });
   return res.json();
-};
+}
 
-// --- Tasks ---
-export const fetchTasks = async (token: string) => {
-  const res = await fetch(`${API_URL}/tasks/`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  return res.json();
-};
-export const createTask = async (title: string, token: string) => {
-  const res = await fetch(`${API_URL}/tasks/`, {
+// --- EXPLORER (NEW) ---
+export async function fetchFiles(parentId: string | null, token: string) {
+  const url = parentId
+    ? `${API_URL}/api/explorer/?parent_id=${parentId}`
+    : `${API_URL}/api/explorer/`;
+  const res = await fetch(url, { headers: getHeaders(token) });
+  return res.ok ? res.json() : [];
+}
+export async function createFile(data: any, token: string) {
+  return await fetch(`${API_URL}/api/explorer/`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({ title }),
-  });
-  return res.json();
-};
-export const updateTask = async (id: string, updates: any, token: string) => {
-  await fetch(`${API_URL}/tasks/${id}`, {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(updates),
-  });
-};
-export const deleteTask = async (id: string, token: string) => {
-  await fetch(`${API_URL}/tasks/${id}`, {
-    method: "DELETE",
-    headers: { Authorization: `Bearer ${token}` },
-  });
-};
-
-// --- Habits ---
-export const fetchHabits = async (token: string) => {
-  const res = await fetch(`${API_URL}/habits/`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  return res.json();
-};
-export const createHabit = async (title: string, token: string) => {
-  const res = await fetch(`${API_URL}/habits/`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({ title }),
-  });
-  return res.json();
-};
-export const incrementHabit = async (id: string, token: string) => {
-  await fetch(`${API_URL}/habits/${id}/increment`, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${token}` },
-  });
-};
-export const deleteHabit = async (id: string, token: string) => {
-  await fetch(`${API_URL}/habits/${id}`, {
-    method: "DELETE",
-    headers: { Authorization: `Bearer ${token}` },
-  });
-};
-
-// --- Finance ---
-export const fetchTransactions = async (token: string) => {
-  const res = await fetch(`${API_URL}/finance/`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  return res.json();
-};
-export const addTransaction = async (data: any, token: string) => {
-  const res = await fetch(`${API_URL}/finance/`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
+    headers: getHeaders(token),
     body: JSON.stringify(data),
   });
-  return res.json();
-};
-export const deleteTransaction = async (id: string, token: string) => {
-  await fetch(`${API_URL}/finance/${id}`, {
-    method: "DELETE",
-    headers: { Authorization: `Bearer ${token}` },
+}
+export async function updateFile(id: string, updates: any, token: string) {
+  return await fetch(`${API_URL}/api/explorer/${id}`, {
+    method: "PATCH",
+    headers: getHeaders(token),
+    body: JSON.stringify(updates),
   });
-};
+}
+export async function deleteFile(id: string, token: string) {
+  return await fetch(`${API_URL}/api/explorer/${id}`, {
+    method: "DELETE",
+    headers: getHeaders(token),
+  });
+}
 
-// --- Journal ---
-export const fetchJournal = async (token: string) => {
-  const res = await fetch(`${API_URL}/journal/`, {
-    headers: { Authorization: `Bearer ${token}` },
+// --- SETTINGS (NEW) ---
+export async function fetchSettings(token: string) {
+  const res = await fetch(`${API_URL}/api/settings/`, {
+    headers: getHeaders(token),
   });
-  return res.json();
-};
-export const createEntry = async (content: string, token: string) => {
-  const res = await fetch(`${API_URL}/journal/`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({ content, mood: "focused" }),
+  return res.ok ? res.json() : {};
+}
+export async function updateSettings(updates: any, token: string) {
+  return await fetch(`${API_URL}/api/settings/`, {
+    method: "PATCH",
+    headers: getHeaders(token),
+    body: JSON.stringify(updates),
   });
-  return res.json();
-};
-export const deleteEntry = async (id: string, token: string) => {
-  await fetch(`${API_URL}/journal/${id}`, {
-    method: "DELETE",
-    headers: { Authorization: `Bearer ${token}` },
-  });
-};
+}

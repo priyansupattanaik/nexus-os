@@ -7,12 +7,14 @@ import {
   HeartPulse,
   Timer,
   LayoutDashboard,
+  HardDrive,
+  Settings as SettingsIcon,
 } from "lucide-react";
 
 interface SidebarProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
-  onOpenProfile: () => void; // <<< Added Prop
+  onOpenProfile: () => void;
 }
 
 export default function Sidebar({
@@ -22,6 +24,7 @@ export default function Sidebar({
 }: SidebarProps) {
   const menuItems = [
     { id: "dashboard", label: "Overview", icon: LayoutDashboard },
+    { id: "explorer", label: "Explorer", icon: HardDrive }, // <<< NEW
     { id: "tasks", label: "Tasks", icon: CheckSquare },
     { id: "finance", label: "Finance", icon: DollarSign },
     { id: "habits", label: "Habits", icon: Repeat },
@@ -29,6 +32,7 @@ export default function Sidebar({
     { id: "bio", label: "Bio-Sync", icon: HeartPulse },
     { id: "focus", label: "Focus Lab", icon: Timer },
     { id: "analysis", label: "Neural", icon: BrainCircuit },
+    { id: "settings", label: "Settings", icon: SettingsIcon }, // <<< NEW
   ];
 
   return (
@@ -66,7 +70,7 @@ export default function Sidebar({
         })}
       </div>
 
-      {/* User Footer (Now Interactive) */}
+      {/* User Footer */}
       <div className="p-4 border-t border-gray-100">
         <button
           onClick={onOpenProfile}
