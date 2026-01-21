@@ -2,8 +2,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth";
 import { fetchTasks, createTask, updateTask, deleteTask } from "@/lib/api";
 import { useSystemStore } from "@/lib/store";
-import { GlassCard } from "@/components/ui/GlassCard";
-import { CheckSquare, Plus, Trash2, GripVertical } from "lucide-react";
+import { Plus, Trash2, GripVertical } from "lucide-react";
 
 type Task = {
   id: string;
@@ -94,14 +93,14 @@ export default function TasksModule() {
     <div
       onDrop={(e) => onDrop(e, status)}
       onDragOver={allowDrop}
-      className="flex-1 min-w-[200px] flex flex-col bg-black/20 rounded-2xl p-2 transition-colors border border-white/5"
+      className="flex-1 min-w-[140px] flex flex-col bg-white/5 rounded-xl p-2 transition-colors border border-white/5"
     >
       <div
-        className={`py-3 px-2 text-xs font-bold uppercase tracking-widest text-${color}-400 text-center select-none opacity-80`}
+        className={`mb-2 text-[10px] font-bold uppercase tracking-widest text-${color}-400 text-center select-none opacity-80`}
       >
         {title}
       </div>
-      <div className="flex-1 space-y-2 overflow-y-auto pr-1">
+      <div className="flex-1 space-y-2 overflow-y-auto custom-scrollbar pr-1">
         {tasks
           .filter((t) => t.status === status)
           .map((t) => (
@@ -109,17 +108,17 @@ export default function TasksModule() {
               key={t.id}
               draggable
               onDragStart={(e) => onDragStart(e, t.id)}
-              className="p-3 bg-white/5 hover:bg-white/10 border border-white/5 rounded-xl cursor-grab active:cursor-grabbing group relative flex items-start gap-3 shadow-sm transition-all hover:-translate-y-0.5"
+              className="p-2 bg-black/40 border border-white/5 rounded-lg cursor-grab active:cursor-grabbing group relative flex items-start gap-2 shadow-sm hover:bg-white/10"
             >
-              <GripVertical className="w-4 h-4 text-slate-600 mt-0.5 flex-shrink-0" />
-              <p className="text-sm font-medium text-slate-200 leading-snug break-words flex-1">
+              <GripVertical className="w-3 h-3 text-slate-600 mt-0.5 flex-shrink-0" />
+              <p className="text-xs font-medium text-slate-200 leading-snug flex-1">
                 {t.title}
               </p>
               <button
                 onClick={() => handleDelete(t.id)}
-                className="text-slate-500 hover:text-rose-400 opacity-0 group-hover:opacity-100 transition-all flex-shrink-0"
+                className="text-slate-500 hover:text-rose-400 opacity-0 group-hover:opacity-100"
               >
-                <Trash2 className="w-4 h-4" />
+                <Trash2 className="w-3 h-3" />
               </button>
             </div>
           ))}
@@ -128,26 +127,24 @@ export default function TasksModule() {
   );
 
   return (
-    <GlassCard title="Mission Board" icon={<CheckSquare />}>
-      <div className="flex flex-col h-full p-5 gap-5">
-        <form onSubmit={handleAddTask} className="flex gap-3">
-          <input
-            value={newTask}
-            onChange={(e) => setNewTask(e.target.value)}
-            placeholder="Add a new directive..."
-            className="os-input flex-1"
-          />
-          <button type="submit" className="os-btn os-btn-primary">
-            <Plus className="w-4 h-4" />
-          </button>
-        </form>
+    <div className="flex flex-col h-full p-4 gap-4 bg-black/20">
+      <form onSubmit={handleAddTask} className="flex gap-2">
+        <input
+          value={newTask}
+          onChange={(e) => setNewTask(e.target.value)}
+          placeholder="New Task..."
+          className="os-input flex-1"
+        />
+        <button type="submit" className="os-btn os-btn-primary px-3">
+          <Plus className="w-4 h-4" />
+        </button>
+      </form>
 
-        <div className="flex-1 flex gap-4 overflow-x-auto pb-2 scroll-smooth">
-          <Column title="To Do" status="todo" color="slate" />
-          <Column title="In Progress" status="in_progress" color="blue" />
-          <Column title="Completed" status="done" color="emerald" />
-        </div>
+      <div className="flex-1 flex gap-2 overflow-x-auto pb-2">
+        <Column title="To Do" status="todo" color="slate" />
+        <Column title="Active" status="in_progress" color="blue" />
+        <Column title="Done" status="done" color="emerald" />
       </div>
-    </GlassCard>
+    </div>
   );
 }
