@@ -4,109 +4,70 @@
 
 @layer base {
   :root {
-    /* Typography */
-    --font-sans:
-      "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-      "Helvetica Neue", Arial, sans-serif;
+    /* ZENITH PALETTE (Light/Ceramic) */
+    --bg-main: #f3f4f6; /* Slate-100 */
+    --bg-card: #ffffff; /* Pure White */
+    --text-primary: #1f2937; /* Gray-800 */
+    --text-secondary: #6b7280; /* Gray-500 */
+    --accent: #0ea5e9; /* Sky-500 (Medical Blue) */
+    --border: #e5e7eb; /* Gray-200 */
+
+    /* Font */
+    --font-sans: "Inter", system-ui, -apple-system, sans-serif;
   }
 
   body {
-    @apply antialiased text-slate-100 overflow-x-hidden selection:bg-blue-500/30 selection:text-white;
+    @apply antialiased text-[var(--text-primary)] bg-[var(--bg-main)] overflow-x-hidden selection:bg-[var(--accent)]/20 selection:text-[var(--accent)];
     font-family: var(--font-sans);
-
-    /* The "Deep Bloom" Wallpaper */
-    background:
-      radial-gradient(
-        circle at 10% 20%,
-        rgba(56, 189, 248, 0.08),
-        transparent 40%
-      ),
-      radial-gradient(
-        circle at 90% 80%,
-        rgba(139, 92, 246, 0.1),
-        transparent 40%
-      ),
-      radial-gradient(
-        circle at 50% 50%,
-        rgba(15, 23, 42, 0.8),
-        transparent 100%
-      ),
-      linear-gradient(to bottom right, #020617, #0f172a, #1e1b4b);
-    background-attachment: fixed;
-    background-size: cover;
   }
 }
 
 @layer components {
-  /* --- THE GLASS PANEL (Windows Acrylic + macOS Shape) --- */
-  .os-panel {
-    @apply relative flex flex-col bg-white/[0.03] backdrop-blur-2xl border border-white/[0.08] rounded-3xl shadow-2xl transition-all duration-300 overflow-hidden;
-    box-shadow: 0 20px 40px -4px rgba(0, 0, 0, 0.4);
+  /* ZENITH CARD - The core building block */
+  .zenith-card {
+    @apply bg-[var(--bg-card)] rounded-2xl border border-[var(--border)] transition-all duration-300;
+    box-shadow:
+      0 4px 6px -1px rgba(0, 0, 0, 0.05),
+      0 2px 4px -1px rgba(0, 0, 0, 0.03); /* Soft Shadow */
   }
 
-  .os-panel:hover {
-    @apply bg-white/[0.06] border-white/[0.15];
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  .zenith-card:hover {
+    box-shadow:
+      0 10px 15px -3px rgba(0, 0, 0, 0.08),
+      0 4px 6px -2px rgba(0, 0, 0, 0.04);
     transform: translateY(-2px);
   }
 
-  /* --- INPUT FIELDS (Soft & Tactile) --- */
-  .os-input {
-    @apply bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:bg-black/30 transition-all font-medium;
+  /* INPUTS (Clean & Solid) */
+  .zenith-input {
+    @apply bg-gray-50 border border-gray-200 rounded-lg px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/20 focus:border-[var(--accent)] transition-all font-medium;
   }
 
-  /* --- BUTTONS (Pill-shaped & Gradient) --- */
-  .os-btn {
-    @apply flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-xs tracking-wide uppercase transition-all active:scale-95 select-none;
-    background: linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.08),
-      rgba(255, 255, 255, 0.02)
-    );
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: rgba(255, 255, 255, 0.9);
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  /* BUTTONS (Tactile & Minimal) */
+  .zenith-btn {
+    @apply flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg font-semibold text-xs tracking-wide uppercase transition-all active:scale-95 select-none text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 hover:text-gray-900 shadow-sm;
   }
 
-  .os-btn:hover {
-    @apply bg-white/10 border-white/20 text-white;
+  .zenith-btn-primary {
+    @apply bg-[var(--accent)] text-white border-transparent hover:bg-sky-600 shadow-md shadow-sky-500/20;
   }
 
-  /* Primary Action Button */
-  .os-btn-primary {
-    @apply border-blue-500/30 text-white shadow-lg shadow-blue-500/20;
-    background: linear-gradient(
-      180deg,
-      rgba(59, 130, 246, 0.4),
-      rgba(37, 99, 235, 0.2)
-    );
-  }
-  .os-btn-primary:hover {
-    @apply border-blue-400/50;
-    background: linear-gradient(
-      180deg,
-      rgba(59, 130, 246, 0.6),
-      rgba(37, 99, 235, 0.4)
-    );
+  .zenith-btn-danger {
+    @apply text-rose-500 border-rose-200 bg-rose-50 hover:bg-rose-100 hover:border-rose-300;
   }
 
-  /* Danger Button */
-  .os-btn-danger {
-    @apply border-red-500/30 text-red-200 hover:text-white hover:border-red-500/50 hover:bg-red-500/20;
-  }
-
-  /* --- SCROLLBAR (Invisible until hovered) --- */
+  /* SCROLLBAR (Subtle) */
   ::-webkit-scrollbar {
-    width: 4px;
+    width: 6px;
   }
   ::-webkit-scrollbar-track {
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.1);
+    background: #cbd5e1;
     border-radius: 10px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.3);
+    background: #94a3b8;
   }
 }
